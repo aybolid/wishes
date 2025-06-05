@@ -1,6 +1,6 @@
 import { formDataToObject } from "$lib/utils/forms";
 import { fail, redirect } from "@sveltejs/kit";
-import { safeParse, z } from "zod/v4";
+import { z } from "zod/v4";
 import type { Actions } from "./$types";
 import { db } from "$lib/server/db";
 import { eq } from "drizzle-orm";
@@ -23,7 +23,7 @@ export const actions: Actions = {
     const formData = await e.request.formData();
     const dataObject = formDataToObject(formData);
 
-    const { success, data, error } = safeParse(signupSchema, dataObject);
+    const { success, data, error } = signupSchema.safeParse(dataObject);
 
     if (!success) {
       const errorMap = error.issues.reduce<Record<PropertyKey, string>>((acc, issue) => {
