@@ -1,45 +1,58 @@
 <script lang="ts">
   import { enhance } from "$app/forms";
-  import Button from "$lib/components/ui/button/button.svelte";
-  import Input from "$lib/components/ui/input/input.svelte";
+  import Button from "$lib/components/ui/button.svelte";
+  import Input from "$lib/components/ui/input.svelte";
   import type { ActionData } from "./$types";
 
   const { form }: { form: ActionData } = $props();
   const usernameError = $derived(form?.errorMap?.username);
   const passwordError = $derived(form?.errorMap?.password);
   const rootError = $derived(form?.message);
+
+  let isSubmitting = $state(false);
 </script>
 
 <main class="grid h-full place-items-center">
-  <form method="post" class="grid gap-2 rounded-sm border p-6" use:enhance>
-    <label for="username">Username</label>
+  <form
+    method="post"
+    class="grid w-full max-w-sm gap-2 rounded-sm border p-6"
+    use:enhance={() => {
+      isSubmitting = true;
+      return async ({ update }) => {
+        isSubmitting = false;
+        update();
+      };
+    }}
+  >
+    <h1 class="mb-4 text-lg font-semibold">Login</h1>
+
     <Input
-      hasError={!!usernameError || !!rootError}
+      label="Username"
+      forceError={!!rootError}
+      error={usernameError}
       type="text"
       name="username"
       required
       placeholder="johnpork13"
     />
-    {#if usernameError}
-      <p class="text-destructive text-sm">{usernameError}</p>
-    {/if}
-
-    <label for="password">Password</label>
     <Input
-      hasError={!!passwordError || !!rootError}
+      label="Password"
+      forceError={!!rootError}
+      error={passwordError}
       type="password"
       name="password"
       required
       placeholder="mysecret"
     />
-    {#if passwordError}
-      <p class="text-destructive text-sm">{passwordError}</p>
-    {/if}
 
     {#if rootError}
       <p class="text-destructive text-sm">{rootError}</p>
     {/if}
 
-    <Button type="submit" class="mt-4 ml-auto">Login</Button>
+    <Button isLoading={isSubmitting} type="submit" class="mt-6 w-full">Login</Button>
+
+    <a href="/auth/signup" class="text-muted-foreground mt-4 text-center text-sm hover:underline">
+      No account? Signup
+    </a>
   </form>
 </main>

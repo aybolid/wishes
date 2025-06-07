@@ -1,11 +1,12 @@
 <script lang="ts">
   import { cn } from "$lib/utils/styles";
   import { cva, type VariantProps } from "class-variance-authority";
+  import { Loader2 } from "lucide-svelte";
   import type { Snippet } from "svelte";
   import type { HTMLButtonAttributes } from "svelte/elements";
 
   const buttonVariants = cva(
-    "rounded-sm w-fit transition-all duration-150 ease-in-out disabled:opacity-60 disabled:pointer-events-none",
+    "rounded-sm w-fit transition-all duration-150 ease-in-out disabled:opacity-60 disabled:pointer-events-none inline-flex items-center justify-center gap-2",
     {
       variants: {
         variant: {
@@ -29,12 +30,25 @@
 
   type Props = {
     children: Snippet<[]>;
+    isLoading?: boolean;
   } & HTMLButtonAttributes;
 
-  const { children, variant, size, ...props }: Props & VariantProps<typeof buttonVariants> =
-    $props();
+  const {
+    children,
+    variant,
+    size,
+    isLoading = false,
+    ...props
+  }: Props & VariantProps<typeof buttonVariants> = $props();
 </script>
 
-<button {...props} class={cn(buttonVariants({ variant, size }), props.class)}>
+<button
+  {...props}
+  class={cn(buttonVariants({ variant, size }), props.class)}
+  disabled={props.disabled ?? isLoading}
+>
+  {#if isLoading}
+    <Loader2 size={16} class="animate-spin" />
+  {/if}
   {@render children()}
 </button>

@@ -9,14 +9,28 @@ import { hash } from "@node-rs/argon2";
 import * as auth from "$lib/server/auth";
 import { encodeBase32LowerCase } from "@oslojs/encoding";
 
-const signupSchema = z.object({
-  username: z
-    .string()
-    .min(3)
-    .max(31)
-    .regex(/^[a-z0-9_-]+$/),
-  password: z.string().min(6).max(255),
-});
+const signupSchema = z
+  .object({
+    username: z
+      .string()
+      .trim()
+      .min(3, "Must be at least 3 characters")
+      .max(31, "Must be less than 31 characters")
+      .regex(
+        /^[a-z0-9_-]+$/,
+        "Only lowercase letters, numbers, underscores, and dashes are allowed",
+      ),
+    password: z
+      .string()
+      .trim()
+      .min(6, "Must be at least 6 characters")
+      .max(31, "Must be less than 31 characters"),
+    passwordConfirmation: z.string().trim().min(1, "Required"),
+  })
+  .refine((data) => data.password === data.passwordConfirmation, {
+    error: "Passwords do not match",
+    path: ["passwordConfirmation"],
+  });
 
 export const actions: Actions = {
   default: async (e) => {
