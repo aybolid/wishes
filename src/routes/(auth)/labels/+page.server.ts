@@ -1,8 +1,21 @@
-import type { Actions } from "./$types";
+import type { Actions, PageServerLoad } from "./$types";
 import { formDataToObject } from "$lib/utils/forms";
 import { z } from "zod/v4";
 import { fail } from "@sveltejs/kit";
 import { requireAuthenticatedUser } from "$lib/server/auth";
+import { db } from "$lib/server/db";
+import * as schema from "$lib/server/db/schema";
+import { desc } from "drizzle-orm";
+
+export const load: PageServerLoad = async () => {
+  const labels: schema.Label[] = await db
+    .select()
+    .from(schema.labels)
+    .orderBy(desc(schema.labels.labelId))
+    .catch(() => []);
+
+  return { labels };
+};
 
 const createLabelSchema = z.object({
   labelName: z.string().trim().min(1, "Required").max(31, "Must be 31 characters or less"),
@@ -26,6 +39,17 @@ export const actions: Actions = {
       return fail(400, { createLabel: { errorMap } });
     }
 
-    console.log(data, user);
+    try {
+      await db.insert(schema.labels).values({
+        name: data.labelName,
+        description: data.description,
+        creatorId: user.userId,
+      });
+    } catch (e) {
+      console.error(e);
+      return fail(500, {
+        createLabel: { errorMap: { root: "Something went wrong" } as Record<PropertyKey, string> },
+      });
+    }
   },
 };
