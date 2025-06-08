@@ -14,9 +14,9 @@
 
   const labels = $derived(data?.labels);
 
-  const labelNameError = $derived(form?.createLabel.errorMap?.labelName);
-  const descriptionError = $derived(form?.createLabel.errorMap?.description);
-  const createRootError = $derived(form?.createLabel.errorMap?.root);
+  const createLabelNameError = $derived(form?.createLabel?.errorMap?.labelName);
+  const createDescriptionError = $derived(form?.createLabel?.errorMap?.description);
+  const createRootError = $derived(form?.createLabel?.errorMap?.root);
 </script>
 
 <div class="w-full">
@@ -43,7 +43,7 @@
   >
     <Input
       forceError={!!createRootError}
-      error={labelNameError}
+      error={createLabelNameError}
       label="Name"
       placeholder="Label name"
       name="labelName"
@@ -51,7 +51,7 @@
     />
     <Textarea
       forceError={!!createRootError}
-      error={descriptionError}
+      error={createDescriptionError}
       label="Description"
       name="description"
       placeholder="Label description"

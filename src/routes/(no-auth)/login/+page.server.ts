@@ -1,7 +1,7 @@
 import { formDataToObject } from "$lib/utils/forms";
 import { z } from "zod/v4";
 import type { Actions } from "./$types";
-import { fail, redirect } from "@sveltejs/kit";
+import { fail, redirect, type ActionFailure } from "@sveltejs/kit";
 import { db } from "$lib/server/db";
 import { eq } from "drizzle-orm";
 import * as schema from "$lib/server/db/schema";
@@ -13,8 +13,18 @@ const loginSchema = z.object({
   password: z.string().min(1, "Required"),
 });
 
+type LoginActionReturn = ActionFailure<{
+  login: {
+    errorMap: {
+      username?: string;
+      password?: string;
+      root?: string;
+    };
+  };
+}>;
+
 export const actions: Actions = {
-  default: async (event) => {
+  default: async (event): Promise<LoginActionReturn | void> => {
     const formData = await event.request.formData();
     const dataObject = formDataToObject(formData);
 
@@ -25,7 +35,7 @@ export const actions: Actions = {
         acc[issue.path[0]] = issue.message;
         return acc;
       }, {});
-      return fail(400, { errorMap });
+      return fail(400, { login: { errorMap } });
     }
 
     const user = await db.query.users.findFirst({
@@ -33,7 +43,7 @@ export const actions: Actions = {
     });
 
     if (!user) {
-      return fail(400, { message: "Incorrect username or password" });
+      return fail(400, { login: { errorMap: { root: "Incorrect username or password" } } });
     }
 
     const isPasswordValid = await verify(user.passwordHash, data.password, {
@@ -44,7 +54,7 @@ export const actions: Actions = {
     });
 
     if (!isPasswordValid) {
-      return fail(400, { message: "Incorrect username or password" });
+      return fail(400, { login: { errorMap: { root: "Incorrect username or password" } } });
     }
 
     const sessionToken = auth.generateSessionToken();

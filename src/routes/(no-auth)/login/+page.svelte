@@ -5,9 +5,9 @@
   import type { ActionData } from "./$types";
 
   const { form }: { form: ActionData } = $props();
-  const usernameError = $derived(form?.errorMap?.username);
-  const passwordError = $derived(form?.errorMap?.password);
-  const rootError = $derived(form?.message);
+  const usernameError = $derived(form?.login?.errorMap?.username);
+  const passwordError = $derived(form?.login?.errorMap?.password);
+  const rootError = $derived(form?.login?.errorMap?.root);
 
   let isSubmitting = $state(false);
 </script>

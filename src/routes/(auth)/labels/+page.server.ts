@@ -1,7 +1,7 @@
 import type { Actions, PageServerLoad } from "./$types";
 import { formDataToObject } from "$lib/utils/forms";
 import { z } from "zod/v4";
-import { fail } from "@sveltejs/kit";
+import { fail, type ActionFailure } from "@sveltejs/kit";
 import { requireAuthenticatedUser } from "$lib/server/auth";
 import { db } from "$lib/server/db";
 import * as schema from "$lib/server/db/schema";
@@ -22,8 +22,28 @@ const createLabelSchema = z.object({
   description: z.string().trim().max(255, "Must be 255 characters or less").default(""),
 });
 
+type CreateLabelActionReturn = ActionFailure<{
+  createLabel: {
+    errorMap: {
+      labelName?: string;
+      description?: string;
+      root?: string;
+    };
+  };
+}>;
+
+type UpdateLabelActionReturn = ActionFailure<{
+  updateLabel: {
+    errorMap: {
+      labelName?: string;
+      description?: string;
+      root?: string;
+    };
+  };
+}>;
+
 export const actions: Actions = {
-  createLabel: async (event) => {
+  createLabel: async (event): Promise<CreateLabelActionReturn | void> => {
     const user = requireAuthenticatedUser();
 
     const formData = await event.request.formData();
@@ -46,10 +66,21 @@ export const actions: Actions = {
         creatorId: user.userId,
       });
     } catch (e) {
+      if (e instanceof Error && "code" in e) {
+        if (e.code === "SQLITE_CONSTRAINT_UNIQUE") {
+          return fail(400, {
+            createLabel: { errorMap: { labelName: "Label name already exists" } },
+          });
+        }
+      }
+
       console.error(e);
       return fail(500, {
-        createLabel: { errorMap: { root: "Something went wrong" } as Record<PropertyKey, string> },
+        createLabel: { errorMap: { root: "Something went wrong" } },
       });
     }
+  },
+  updateLabel: async (): Promise<UpdateLabelActionReturn | void> => {
+    return;
   },
 };

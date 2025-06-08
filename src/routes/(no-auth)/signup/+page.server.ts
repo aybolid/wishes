@@ -1,5 +1,5 @@
 import { formDataToObject } from "$lib/utils/forms";
-import { fail, redirect } from "@sveltejs/kit";
+import { fail, redirect, type ActionFailure } from "@sveltejs/kit";
 import { z } from "zod/v4";
 import type { Actions } from "./$types";
 import { db } from "$lib/server/db";
@@ -32,8 +32,19 @@ const signupSchema = z
     path: ["passwordConfirmation"],
   });
 
+type SignupActionReturn = ActionFailure<{
+  signup: {
+    errorMap: {
+      username?: string;
+      password?: string;
+      passwordConfirmation?: string;
+      root?: string;
+    };
+  };
+}>;
+
 export const actions: Actions = {
-  default: async (e) => {
+  default: async (e): Promise<SignupActionReturn | void> => {
     const formData = await e.request.formData();
     const dataObject = formDataToObject(formData);
 
@@ -44,7 +55,7 @@ export const actions: Actions = {
         acc[issue.path[0]] = issue.message;
         return acc;
       }, {});
-      return fail(400, { errorMap });
+      return fail(400, { signup: { errorMap } });
     }
 
     try {
@@ -52,7 +63,7 @@ export const actions: Actions = {
         where: eq(schema.users.username, data.username),
       });
       if (existingUser !== undefined) {
-        return fail(400, { message: "User already exists" });
+        return fail(400, { signup: { errorMap: { root: "User already exists" } } });
       }
 
       const passwordHash = await hash(data.password, {
@@ -70,7 +81,7 @@ export const actions: Actions = {
       auth.setSessionTokenCookie(e, sessionToken, session.expiresAt);
     } catch (error) {
       console.error(error);
-      return fail(500, { message: "Something went wrong" });
+      return fail(500, { signup: { errorMap: { root: "Something went wrong" } } });
     }
 
     return redirect(302, "/");
