@@ -7,6 +7,7 @@
   const { form }: { form: ActionData } = $props();
   const usernameError = $derived(form?.errorMap?.username);
   const passwordError = $derived(form?.errorMap?.password);
+  const passwordConfirmationError = $derived(form?.errorMap?.passwordConfirmation);
   const rootError = $derived(form?.message);
 
   let isSubmitting = $state(false);
@@ -24,7 +25,7 @@
       };
     }}
   >
-    <h1 class="mb-4 text-lg font-semibold">Login</h1>
+    <h1 class="mb-4 text-lg font-semibold">Signup</h1>
 
     <Input
       label="Username"
@@ -44,15 +45,24 @@
       required
       placeholder="mysecret"
     />
+    <Input
+      label="Password confirmation"
+      forceError={!!rootError}
+      error={passwordConfirmationError}
+      type="password"
+      name="passwordConfirmation"
+      required
+      placeholder="mysecret"
+    />
 
     {#if rootError}
       <p class="text-destructive text-sm">{rootError}</p>
     {/if}
 
-    <Button isLoading={isSubmitting} type="submit" class="mt-6 w-full">Login</Button>
+    <Button isLoading={isSubmitting} type="submit" class="mt-6 w-full">Signup</Button>
 
-    <a href="/auth/signup" class="text-muted-foreground mt-4 text-center text-sm hover:underline">
-      No account? Signup
+    <a href="/login" class="text-muted-foreground mt-4 text-center text-sm hover:underline">
+      Already have an account? Login
     </a>
   </form>
 </main>

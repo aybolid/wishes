@@ -38,7 +38,7 @@ export async function validateSessionToken(token: string) {
   const sessionId = encodeHexLowerCase(sha256(new TextEncoder().encode(token)));
   const [result] = await db
     .select({
-      user: { id: schema.users.userId, username: schema.users.username },
+      user: { userId: schema.users.userId, username: schema.users.username },
       session: schema.sessions,
     })
     .from(schema.sessions)
@@ -97,7 +97,7 @@ export function requireAuthenticatedUser() {
   const { locals } = getRequestEvent();
 
   if (!locals.user) {
-    return redirect(302, "/auth/login");
+    return redirect(302, "/login");
   }
 
   return locals.user;

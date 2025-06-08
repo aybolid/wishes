@@ -24,7 +24,11 @@
 <input
   {...props}
   id={props.id ?? props.name}
-  class={cn("border-border h-8 rounded-sm", { "border-destructive": hasError }, props.class)}
+  class={cn(
+    "border-border bg-background placeholder:text-muted-foreground/80 h-8 rounded-sm",
+    { "border-destructive": hasError },
+    props.class,
+  )}
 />
 
 {#if error && error.length > 0}
