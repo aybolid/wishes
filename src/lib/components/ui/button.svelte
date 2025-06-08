@@ -13,8 +13,10 @@
           primary: "bg-primary text-primary-foreground hover:bg-primary/90",
           secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/90",
           destructive: "bg-destructive text-white hover:bg-destructive/90",
+          ghost: "bg-transparent text-primary-foreground",
         },
         size: {
+          icon: "p-1",
           sm: "px-2 py-1 text-sm",
           md: "px-4 py-1 text-md",
           lg: "px-4 py-2 text-md",

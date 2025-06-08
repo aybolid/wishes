@@ -42,6 +42,6 @@
 <div class="flex h-full w-full flex-col">
   {@render header()}
   <main class="px-4 py-6">
-    <div class="mx-auto max-w-4xl">{@render children()}</div>
+    <div class="mx-auto w-full max-w-4xl">{@render children()}</div>
   </main>
 </div>

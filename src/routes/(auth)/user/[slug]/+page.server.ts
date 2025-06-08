@@ -28,11 +28,11 @@ export const load: PageServerLoad = async ({ params }) => {
 export const actions: Actions = {
   logout: async (event) => {
     if (!event.locals.session) {
-      return redirect(302, "/auth/login");
+      return redirect(302, "/login");
     }
     await auth.invalidateSession(event.locals.session.sessionId);
     auth.deleteSessionTokenCookie(event);
 
-    return redirect(302, "/auth/login");
+    return redirect(302, "/login");
   },
 };

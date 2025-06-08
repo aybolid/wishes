@@ -1,6 +1,6 @@
 <script lang="ts">
   import { cn } from "$lib/utils/styles";
-  import type { HTMLInputAttributes } from "svelte/elements";
+  import type { HTMLTextareaAttributes } from "svelte/elements";
 
   type Props = {
     /** Forces the input to be in error state if `true`. */
@@ -9,7 +9,7 @@
     label?: string;
     /** The error message(s) for the input. */
     error?: string | string[];
-  } & HTMLInputAttributes;
+  } & HTMLTextareaAttributes;
 
   const { forceError = false, label = "", error, ...props }: Props = $props();
   const hasError = $derived(forceError || (error?.length ?? 0) > 0);
@@ -24,15 +24,15 @@
   </label>
 {/if}
 
-<input
+<textarea
   {...props}
   id={props.id ?? props.name}
   class={cn(
-    "border-border bg-background placeholder:text-muted-foreground/80 h-8 rounded-sm",
+    "border-border bg-background placeholder:text-muted-foreground/80 h-8 max-h-32 min-h-12 rounded-sm",
     { "border-destructive": hasError },
     props.class,
   )}
-/>
+></textarea>
 
 {#if error && error.length > 0}
   {#if Array.isArray(error)}
