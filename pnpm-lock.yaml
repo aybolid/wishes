@@ -32,6 +32,9 @@ importers:
       lucide-svelte:
         specifier: ^0.513.0
         version: 0.513.0(svelte@5.33.14)
+      svelte-sonner:
+        specifier: ^1.0.4
+        version: 1.0.4(svelte@5.33.14)
       tailwind-merge:
         specifier: ^3.3.0
         version: 3.3.0
@@ -1932,6 +1935,11 @@ packages:
   run-parallel@1.2.0:
     resolution: {integrity: sha512-5l4VyZR86LZ/lDxZTR6jqL8AFE2S0IFLMP26AbjsLVADxHdhB/c0GUsH+y39UfCi3dzz8OlQuPmnaJOMoDHQBA==}
 
+  runed@0.26.0:
+    resolution: {integrity: sha512-qWFv0cvLVRd8pdl/AslqzvtQyEn5KaIugEernwg9G98uJVSZcs/ygvPBvF80LA46V8pwRvSKnaVLDI3+i2wubw==}
+    peerDependencies:
+      svelte: ^5.7.0
+
   sade@1.8.1:
     resolution: {integrity: sha512-xal3CZX1Xlo/k4ApwCFrHVACi9fBqJ7V+mwhBsuf/1IOKbBy098Fex+Wa/5QMubw09pSZ/u8EY8PWgevJsXp1A==}
     engines: {node: '>=6'}
@@ -2011,6 +2019,11 @@ packages:
     peerDependenciesMeta:
       svelte:
         optional: true
+
+  svelte-sonner@1.0.4:
+    resolution: {integrity: sha512-ctm9jeV0Rf3im2J6RU1emccrJFjRSdNSPsLlxaF62TLZw9bB1D40U/U7+wqEgohJY/X7FBdghdj0BFQF/IqKPQ==}
+    peerDependencies:
+      svelte: ^5.0.0
 
   svelte@5.33.14:
     resolution: {integrity: sha512-kRlbhIlMTijbFmVDQFDeKXPLlX1/ovXwV0I162wRqQhRcygaqDIcu1d/Ese3H2uI+yt3uT8E7ndgDthQv5v5BA==}
@@ -3641,6 +3654,11 @@ snapshots:
     dependencies:
       queue-microtask: 1.2.3
 
+  runed@0.26.0(svelte@5.33.14):
+    dependencies:
+      esm-env: 1.2.2
+      svelte: 5.33.14
+
   sade@1.8.1:
     dependencies:
       mri: 1.2.0
@@ -3715,6 +3733,11 @@ snapshots:
       postcss-scss: 4.0.9(postcss@8.5.4)
       postcss-selector-parser: 7.1.0
     optionalDependencies:
+      svelte: 5.33.14
+
+  svelte-sonner@1.0.4(svelte@5.33.14):
+    dependencies:
+      runed: 0.26.0(svelte@5.33.14)
       svelte: 5.33.14
 
   svelte@5.33.14:

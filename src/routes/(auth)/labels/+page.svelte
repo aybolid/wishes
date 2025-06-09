@@ -5,56 +5,60 @@
   import Input from "$lib/components/ui/input.svelte";
   import type { ActionData, PageServerData } from "./$types";
   import Textarea from "$lib/components/ui/textarea.svelte";
-  import type { Label } from "$lib/server/db/schema";
+  import type { Label as LabelType } from "$lib/server/db/schema";
   import { Edit, Plus, Trash } from "lucide-svelte";
-
-  let isDrawerOpen = $state(false);
-  let isCreatingLabel = $state(false);
-
-  let isEditDrawerOpen = $state(false);
-  let labelToEdit = $state<Label | undefined>();
-  let isUpdatingLabel = $state(false);
+  import { toast } from "svelte-sonner";
+  import Label from "$lib/components/ui/label.svelte";
+  import ConfirmPopover from "$lib/components/ui/confirm-popover.svelte";
 
   const { form, data }: { form: ActionData; data: PageServerData } = $props();
 
   const labels = $derived(data?.labels);
 
-  const createLabelNameError = $derived(form?.createLabel?.errorMap?.labelName);
-  const createDescriptionError = $derived(form?.createLabel?.errorMap?.description);
-  const createRootError = $derived(form?.createLabel?.errorMap?.root);
+  const createErrorMap = $derived(form?.createLabel?.errorMap);
+  let updateErrorMap = $derived(form?.updateLabel?.errorMap);
+  const deleteErrorMap = $derived(form?.deleteLabel?.errorMap);
 
-  let updateLabelNameError = $derived(form?.updateLabel?.errorMap?.labelName);
-  let updateDescriptionError = $derived(form?.updateLabel?.errorMap?.description);
-  let updateRootError = $derived(form?.updateLabel?.errorMap?.root);
+  let isCreateDrawerOpen = $state(false);
+  let isCreatingLabel = $state(false);
 
+  let isEditDrawerOpen = $state(false);
+  let labelToEdit = $state<LabelType | undefined>();
+  let isUpdatingLabel = $state(false);
   let editFormElement: HTMLFormElement | undefined = $state();
+
+  $effect(() => {
+    if (!deleteErrorMap?.root) return;
+    toast.error("Failed to delete label", { description: deleteErrorMap.root });
+  });
 
   function closeEditLabelDrawer() {
     isEditDrawerOpen = false;
     editFormElement?.reset();
-    updateDescriptionError = undefined;
-    updateLabelNameError = undefined;
-    updateRootError = undefined;
+    updateErrorMap = undefined;
   }
 </script>
 
 <div class="flex w-full items-center justify-end">
-  <Button onclick={() => (isDrawerOpen = true)}>
+  <Button onclick={() => (isCreateDrawerOpen = true)}>
     <Plus />
     Add Label
   </Button>
 </div>
 
-<section class="mt-4 grid gap-4">
-  {#if data.labels.length === 0}
-    <p class="text-muted-foreground text-center">No labels yet</p>
-  {/if}
+{#if data.labels.length === 0}
+  <p class="text-muted-foreground mt-4 text-center">No labels yet</p>
+{/if}
+
+<section class="mt-4 grid gap-4 sm:grid-cols-2">
   {#each labels as label}
-    {@const isCurrentUser = label.creatorId === data.user.userId}
+    {@const isUserCreator = label.creatorId === data.user.userId}
     <div class="flex flex-col gap-2 rounded-sm border p-3">
-      <div>{label.name}</div>
-      <p class="text-muted-foreground">{label.description}</p>
-      {#if isCurrentUser}
+      <div>
+        <Label {label} />
+      </div>
+      <p class="text-muted-foreground flex-1">{label.description}</p>
+      {#if isUserCreator}
         <div class="flex items-center justify-end gap-2">
           <Button
             title="Edit"
@@ -67,27 +71,32 @@
           >
             <Edit size={16} />
           </Button>
-          <form
-            method="post"
-            action="?/deleteLabel"
-            use:enhance={({ formData }) => {
-              formData.set("labelId", label.labelId.toString());
-              return ({ update }) => {
-                update();
-              };
+          <ConfirmPopover
+            title={`Delete "${label.name}" Label`}
+            message="Are you sure you want to delete this label?"
+            confirmText="Delete"
+            confirmForm={{
+              method: "post",
+              action: "?/deleteLabel",
+              enhance: ({ formData }) => {
+                formData.set("labelId", label.labelId.toString());
+                return ({ update }) => {
+                  update();
+                };
+              },
             }}
           >
-            <Button type="submit" title="Delete" size="icon" variant="destructive">
+            <Button type="button" title="Delete" size="icon" variant="destructive">
               <Trash size={16} />
             </Button>
-          </form>
+          </ConfirmPopover>
         </div>
       {/if}
     </div>
   {/each}
 </section>
 
-<Drawer isOpen={isDrawerOpen} onClose={() => (isDrawerOpen = false)} title="Add Label">
+<Drawer isOpen={isCreateDrawerOpen} onClose={() => (isCreateDrawerOpen = false)} title="Add Label">
   <form
     class="grid gap-2"
     method="post"
@@ -101,23 +110,23 @@
     }}
   >
     <Input
-      forceError={!!createRootError}
-      error={createLabelNameError}
+      forceError={!!createErrorMap?.root}
+      error={createErrorMap?.labelName}
       label="Name"
       placeholder="Label name"
       name="labelName"
       required
     />
     <Textarea
-      forceError={!!createRootError}
-      error={createDescriptionError}
+      forceError={!!createErrorMap?.root}
+      error={createErrorMap?.description}
       label="Description"
       name="description"
       placeholder="Label description"
     />
 
-    {#if createRootError}
-      <p class="text-destructive text-sm">{createRootError}</p>
+    {#if createErrorMap?.root}
+      <p class="text-destructive text-sm">{createErrorMap.root}</p>
     {/if}
 
     <Button isLoading={isCreatingLabel} class="mt-4 w-full">Add</Button>
@@ -148,8 +157,8 @@
     }}
   >
     <Input
-      error={updateLabelNameError}
-      forceError={!!updateRootError}
+      error={updateErrorMap?.labelName}
+      forceError={!!updateErrorMap?.root}
       label="Name"
       placeholder="Label name"
       name="labelName"
@@ -157,16 +166,16 @@
       defaultValue={labelToEdit?.name ?? ""}
     />
     <Textarea
-      error={updateDescriptionError}
-      forceError={!!updateRootError}
+      error={updateErrorMap?.description}
+      forceError={!!updateErrorMap?.root}
       label="Description"
       name="description"
       placeholder="Label description"
       defaultValue={labelToEdit?.description ?? ""}
     />
 
-    {#if updateRootError}
-      <p class="text-destructive text-sm">{updateRootError}</p>
+    {#if updateErrorMap?.root}
+      <p class="text-destructive text-sm">{updateErrorMap.root}</p>
     {/if}
 
     <Button isLoading={isUpdatingLabel} class="mt-4 w-full">Update</Button>
