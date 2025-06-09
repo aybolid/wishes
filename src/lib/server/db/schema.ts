@@ -1,3 +1,4 @@
+import { relations } from "drizzle-orm";
 import { sqliteTable, integer, text } from "drizzle-orm/sqlite-core";
 
 export const users = sqliteTable("users", {
@@ -6,7 +7,12 @@ export const users = sqliteTable("users", {
   passwordHash: text("password_hash").notNull(),
 });
 
+export const usersRelations = relations(users, ({ many }) => ({
+  labels: many(labels, { relationName: "labels" }),
+}));
+
 export type User = typeof users.$inferSelect;
+export type SafeUser = Omit<User, "passwordHash">;
 
 export const sessions = sqliteTable("sessions", {
   sessionId: text("session_id").primaryKey(),
@@ -27,4 +33,13 @@ export const labels = sqliteTable("labels", {
     .references(() => users.userId),
 });
 
+export const labelsRelations = relations(labels, ({ one }) => ({
+  creator: one(users, {
+    relationName: "creator",
+    fields: [labels.creatorId],
+    references: [users.userId],
+  }),
+}));
+
 export type Label = typeof labels.$inferSelect;
+export type LabelWithCreator = Label & { creator: SafeUser };

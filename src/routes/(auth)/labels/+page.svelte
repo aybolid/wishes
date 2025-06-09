@@ -10,10 +10,17 @@
   import { toast } from "svelte-sonner";
   import Label from "$lib/components/ui/label.svelte";
   import ConfirmPopover from "$lib/components/ui/confirm-popover.svelte";
+  import Avatar from "$lib/components/ui/avatar.svelte";
 
   const { form, data }: { form: ActionData; data: PageServerData } = $props();
 
-  const labels = $derived(data?.labels);
+  let showCreatedByCurrentUser = $state(false);
+
+  const labels = $derived(
+    !showCreatedByCurrentUser
+      ? data.labels
+      : data.labels.filter((label) => label.creatorId === data.user.userId),
+  );
 
   const createErrorMap = $derived(form?.createLabel?.errorMap);
   let updateErrorMap = $derived(form?.updateLabel?.errorMap);
@@ -37,29 +44,44 @@
     editFormElement?.reset();
     updateErrorMap = undefined;
   }
+
+  function toggleShowCreatedByCurrentUser() {
+    showCreatedByCurrentUser = !showCreatedByCurrentUser;
+  }
 </script>
 
-<div class="flex w-full items-center justify-end">
+<div class="flex w-full items-center justify-between">
+  <Button onclick={toggleShowCreatedByCurrentUser} variant="outline">
+    {showCreatedByCurrentUser ? "Show All" : "Show Created By Me"}
+  </Button>
   <Button onclick={() => (isCreateDrawerOpen = true)}>
     <Plus />
     Add Label
   </Button>
 </div>
 
-{#if data.labels.length === 0}
+{#if labels.length === 0}
   <p class="text-muted-foreground mt-4 text-center">No labels yet</p>
 {/if}
 
-<section class="mt-4 grid gap-4 sm:grid-cols-2">
+<section class="mt-4 grid gap-4">
   {#each labels as label}
     {@const isUserCreator = label.creatorId === data.user.userId}
     <div class="flex flex-col gap-2 rounded-sm border p-3">
-      <div>
+      <div class="flex items-center justify-between gap-2">
         <Label {label} />
+        <a href={`/user/${label.creator.userId}`} class="ml-auto inline-flex items-center gap-1">
+          <Avatar username={label.creator.username} />
+          <span class="-mt-1">
+            {label.creator.username}
+          </span>
+        </a>
       </div>
-      <p class="text-muted-foreground flex-1">{label.description}</p>
+      {#if label.description}
+        <p class="text-muted-foreground mt-2 flex-1">{label.description}</p>
+      {/if}
       {#if isUserCreator}
-        <div class="flex items-center justify-end gap-2">
+        <div class="mt-2 flex items-center justify-end gap-2">
           <Button
             title="Edit"
             size="icon"

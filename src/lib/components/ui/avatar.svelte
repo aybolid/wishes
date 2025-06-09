@@ -14,9 +14,11 @@
 <div
   style={`background-color: ${color}`}
   class={cn(
-    "inline-flex h-6 w-6 items-center justify-center rounded-full font-mono",
+    "inline-flex size-5 items-center justify-center rounded-full font-mono",
     isDark ? "text-white" : "text-black",
   )}
 >
-  {placeholder}
+  <span class="leading-0">
+    {placeholder}
+  </span>
 </div>

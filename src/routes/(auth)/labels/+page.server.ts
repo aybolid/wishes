@@ -10,11 +10,17 @@ import { desc, eq } from "drizzle-orm";
 export const load: PageServerLoad = async () => {
   const user = requireAuthenticatedUser();
 
-  const labels: schema.Label[] = await db
-    .select()
-    .from(schema.labels)
-    .orderBy(desc(schema.labels.labelId))
-    .catch(() => []);
+  const labels: schema.LabelWithCreator[] = await db.query.labels
+    .findMany({
+      with: {
+        creator: { columns: { passwordHash: false } },
+      },
+      orderBy: desc(schema.labels.labelId),
+    })
+    .catch((e) => {
+      console.error(e);
+      return [];
+    });
 
   return { labels, user };
 };

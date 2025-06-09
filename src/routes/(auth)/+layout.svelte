@@ -31,10 +31,12 @@
           )}>{label}</a
         >
       {/each}
-      <a href={`/user/${user.userId}`} class="ml-auto inline-flex items-center gap-2">
+      <a href={`/user/${user.userId}`} class="ml-auto inline-flex items-center gap-1">
         <Avatar username={user.username} />
-        {user.username}</a
-      >
+        <span class="-mt-1">
+          {user.username}
+        </span>
+      </a>
     </nav>
   </header>
 {/snippet}
