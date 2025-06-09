@@ -51,7 +51,7 @@
 </script>
 
 <div class="flex w-full items-center justify-between">
-  <Button onclick={toggleShowCreatedByCurrentUser} variant="outline">
+  <Button onclick={toggleShowCreatedByCurrentUser} variant="outline" size="sm" class="w-40">
     {showCreatedByCurrentUser ? "Show All" : "Show Created By Me"}
   </Button>
   <Button onclick={() => (isCreateDrawerOpen = true)}>
