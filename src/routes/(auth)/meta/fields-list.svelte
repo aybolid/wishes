@@ -1,12 +1,17 @@
 <script lang="ts">
+  import { enhance } from "$app/forms";
   import Avatar from "$lib/components/ui/avatar.svelte";
-  import type { MetadataFieldWithCreator } from "$lib/server/db/schema";
+  import Button from "$lib/components/ui/button.svelte";
+  import Popover from "$lib/components/ui/popover.svelte";
+  import type { MetadataFieldWithCreator, SafeUser } from "$lib/server/db/schema";
+  import { Edit, Trash } from "lucide-svelte";
 
   type Props = {
     fields: MetadataFieldWithCreator[];
+    currentUser: SafeUser;
   };
 
-  const { fields }: Props = $props();
+  const { fields, currentUser }: Props = $props();
 </script>
 
 {#if fields.length === 0}
@@ -14,6 +19,7 @@
 {/if}
 
 {#snippet fieldCard(field: MetadataFieldWithCreator)}
+  {@const isUserCreator = field.creatorId === currentUser.userId}
   <div class="rounded-sm border p-4">
     <div class="flex items-center justify-between gap-2">
       <h3 class="font-semibold">
@@ -21,7 +27,7 @@
         <span class="text-primary font-normal">({field.config.type})</span>
       </h3>
       <a href={`/user/${field.creator.userId}`} class="ml-auto inline-flex items-center gap-1">
-        <Avatar username={field.creator.username} />
+        <Avatar user={field.creator} />
         <span class="-mt-1">
           {field.creator.username}
         </span>
@@ -37,6 +43,41 @@
           {field.config.options.join(", ")}
         </span>
       </p>
+    {/if}
+    {#if isUserCreator}
+      <div class="mt-4 flex items-center justify-end gap-2">
+        <Button title="Edit" size="icon" variant="secondary">
+          <Edit size={16} />
+        </Button>
+        <Popover>
+          {#snippet trigger({ props })}
+            <Button {...props} type="button" title="Delete" size="icon" variant="destructive">
+              <Trash size={16} />
+            </Button>
+          {/snippet}
+
+          <h3 class="font-semibold">Delete field</h3>
+          <p class="text-muted-foreground mt-1 mb-3 text-sm">
+            Are you sure you want to delete <strong>{field.name}</strong> field?
+          </p>
+          <form
+            class="ml-auto w-fit"
+            method="post"
+            action="?/deleteMetadata"
+            use:enhance={({ formData }) => {
+              formData.set("fieldId", field.fieldId.toString());
+              return ({ update }) => {
+                update();
+              };
+            }}
+          >
+            <Button type="submit" size="sm" variant="destructive">
+              <Trash />
+              Delete
+            </Button>
+          </form>
+        </Popover>
+      </div>
     {/if}
   </div>
 {/snippet}

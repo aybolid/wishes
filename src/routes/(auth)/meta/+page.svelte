@@ -4,8 +4,11 @@
   import { Plus } from "lucide-svelte";
   import CreateMetaForm from "./create-meta-form.svelte";
   import FieldsList from "./fields-list.svelte";
+  import { toast } from "svelte-sonner";
 
   const { form, data }: { form: ActionData; data: PageServerData } = $props();
+
+  const deleteErrorMap = $derived(form?.deleteMetadata?.errorMap);
 
   let showCreatedByCurrentUser = $state(false);
 
@@ -16,6 +19,11 @@
       ? data.fields
       : data.fields.filter((field) => field.creatorId === data.user.userId),
   );
+
+  $effect(() => {
+    if (!deleteErrorMap?.root) return;
+    toast.error("Failed to delete field", { description: deleteErrorMap.root });
+  });
 
   function toggleShowCreatedByCurrentUser() {
     showCreatedByCurrentUser = !showCreatedByCurrentUser;
@@ -32,5 +40,5 @@
   </Button>
 </div>
 
-<FieldsList {fields} />
+<FieldsList {fields} currentUser={data.user} />
 <CreateMetaForm {form} bind:isOpen={isCreateDrawerOpen} />

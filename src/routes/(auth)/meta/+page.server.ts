@@ -6,6 +6,7 @@ import { requireAuthenticatedUser } from "$lib/server/auth";
 import { db } from "$lib/server/db";
 import * as schema from "$lib/server/db/schema";
 import { desc } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 
 export const load: PageServerLoad = async () => {
   const user = requireAuthenticatedUser();
@@ -37,6 +38,10 @@ const createMetadataSchema = z
     path: ["options"],
   });
 
+const deleteMetadataSchema = z.object({
+  fieldId: z.string().transform((value) => parseInt(value, 10)),
+});
+
 type CreateMetadataActionReturn = ActionFailure<{
   createMetadata: {
     errorMap: {
@@ -46,6 +51,12 @@ type CreateMetadataActionReturn = ActionFailure<{
       options?: string;
       root?: string;
     };
+  };
+}>;
+
+type DeleteMetadataActionReturn = ActionFailure<{
+  deleteMetadata: {
+    errorMap: { root?: string };
   };
 }>;
 
@@ -86,6 +97,34 @@ export const actions: Actions = {
       console.error(e);
       return fail(500, {
         createMetadata: { errorMap: { root: "Something went wrong" } },
+      });
+    }
+  },
+  deleteMetadata: async (event): Promise<DeleteMetadataActionReturn | void> => {
+    const formData = await event.request.formData();
+    const dataObject = formDataToObject(formData);
+    const { data, error, success } = deleteMetadataSchema.safeParse(dataObject);
+
+    if (!success) {
+      const errorMap = error.issues.reduce<Record<PropertyKey, string>>((acc, issue) => {
+        acc[issue.path[0]] = issue.message;
+        return acc;
+      }, {});
+
+      if (errorMap.fieldId) {
+        errorMap.root = errorMap.fieldId;
+        delete errorMap.fieldId;
+      }
+
+      return fail(400, { deleteMetadata: { errorMap } });
+    }
+
+    try {
+      await db.delete(schema.metadataFields).where(eq(schema.metadataFields.fieldId, data.fieldId));
+    } catch (e) {
+      console.error(e);
+      return fail(500, {
+        deleteMetadata: { errorMap: { root: "Something went wrong" } },
       });
     }
   },

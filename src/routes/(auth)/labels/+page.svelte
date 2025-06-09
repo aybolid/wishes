@@ -73,7 +73,7 @@
       <div class="flex items-center justify-between gap-2">
         <LabelTag {label} />
         <a href={`/user/${label.creator.userId}`} class="ml-auto inline-flex items-center gap-1">
-          <Avatar username={label.creator.username} />
+          <Avatar user={label.creator} />
           <span class="-mt-1">
             {label.creator.username}
           </span>

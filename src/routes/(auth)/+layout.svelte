@@ -32,7 +32,7 @@
         >
       {/each}
       <a href={`/user/${user.userId}`} class="ml-auto inline-flex items-center gap-1">
-        <Avatar username={user.username} />
+        <Avatar {user} />
         <span class="-mt-1">
           {user.username}
         </span>
