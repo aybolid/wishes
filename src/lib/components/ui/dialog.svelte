@@ -1,8 +1,6 @@
 <script lang="ts">
   import { Dialog, Separator } from "bits-ui";
   import type { Snippet } from "svelte";
-  import Button from "./button.svelte";
-  import { X } from "lucide-svelte";
 
   type Props = {
     trigger?: Snippet<[{ props: Record<string, unknown> }]>;
@@ -20,15 +18,10 @@
     {/snippet}
   </Dialog.Trigger>
   <Dialog.Portal>
-    <Dialog.Overlay
-      class="data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 fixed inset-0 z-50 bg-black/80"
-    />
+    <Dialog.Overlay class="fixed inset-0 z-50 bg-black/80" />
     <Dialog.Content
-      class="data-[state=open]:animate-in data-[state=open]:slide-in-from-right data-[state=closed]:animate-out data-[state=closed]:slide-out-to-right bg-background fixed inset-y-0 right-0 z-50 w-full max-w-[320px] border-l p-4 outline-hidden"
+      class="bg-background shadow-popover fixed top-[50%] left-[50%] z-50 w-full max-w-[calc(100%-2rem)] translate-x-[-50%] translate-y-[-50%] rounded-sm border p-4 outline-hidden sm:max-w-[490px] md:w-full"
     >
-      <Dialog.Close class="absolute top-4 right-4">
-        <Button size="icon" variant="secondary"><X /></Button>
-      </Dialog.Close>
       {#if title}
         <Dialog.Title class="text-lg font-semibold tracking-tight">
           {title}
@@ -40,8 +33,9 @@
         </Dialog.Description>
       {/if}
       {#if title || description}
-        <Separator.Root class="bg-border -mx-4 my-4 block h-px" />
+        <Separator.Root class="bg-muted -mx-4 my-4 block h-px" />
       {/if}
+
       {@render children?.()}
     </Dialog.Content>
   </Dialog.Portal>

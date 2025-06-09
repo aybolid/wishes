@@ -1,17 +1,20 @@
 <script lang="ts">
   import { enhance } from "$app/forms";
+  import { page } from "$app/state";
   import Avatar from "$lib/components/ui/avatar.svelte";
   import Button from "$lib/components/ui/button.svelte";
   import Popover from "$lib/components/ui/popover.svelte";
-  import type { MetadataFieldWithCreator, SafeUser } from "$lib/server/db/schema";
+  import type { MetadataFieldWithCreator } from "$lib/server/db/schema";
   import { Edit, Trash } from "lucide-svelte";
+  import type { PageData } from "./$types";
 
   type Props = {
     fields: MetadataFieldWithCreator[];
-    currentUser: SafeUser;
   };
 
-  const { fields, currentUser }: Props = $props();
+  let { user } = $derived(page.data as PageData);
+
+  const { fields }: Props = $props();
 </script>
 
 {#if fields.length === 0}
@@ -19,19 +22,13 @@
 {/if}
 
 {#snippet fieldCard(field: MetadataFieldWithCreator)}
-  {@const isUserCreator = field.creatorId === currentUser.userId}
+  {@const isUserCreator = field.creatorId === user.userId}
   <div class="rounded-sm border p-4">
     <div class="flex items-center justify-between gap-2">
       <h3 class="font-semibold">
         {field.name}
         <span class="text-primary font-normal">({field.config.type})</span>
       </h3>
-      <a href={`/user/${field.creator.userId}`} class="ml-auto inline-flex items-center gap-1">
-        <Avatar user={field.creator} />
-        <span class="-mt-1">
-          {field.creator.username}
-        </span>
-      </a>
     </div>
     {#if field.description}
       <p class="text-muted-foreground mt-2 flex-1">{field.description}</p>

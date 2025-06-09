@@ -1,6 +1,7 @@
 @import "tailwindcss";
 @plugin '@tailwindcss/forms';
 @plugin '@tailwindcss/typography';
+@plugin "tailwindcss-animate";
 
 :root {
   --background: oklch(1 0 0);
