@@ -10,26 +10,32 @@ import { desc } from "drizzle-orm";
 export const load: PageServerLoad = async () => {
   const user = requireAuthenticatedUser();
 
-  const labels: schema.LabelWithCreator[] = await db.query.labels
+  const fields: schema.MetadataFieldWithCreator[] = await db.query.metadataFields
     .findMany({
       with: {
         creator: { columns: { passwordHash: false } },
       },
-      orderBy: desc(schema.labels.labelId),
+      orderBy: desc(schema.metadataFields.fieldId),
     })
     .catch((e) => {
       console.error(e);
       return [];
     });
 
-  return { labels, user };
+  return { fields, user };
 };
 
-const createMetadataSchema = z.object({
-  fieldName: z.string().trim().min(1, "Required").max(31, "Must be 31 characters or less"),
-  description: z.string().trim().max(255, "Must be 255 characters or less").default(""),
-  type: z.string().trim().min(1, "Required"),
-});
+const createMetadataSchema = z
+  .object({
+    fieldName: z.string().trim().min(1, "Required").max(31, "Must be 31 characters or less"),
+    description: z.string().trim().max(255, "Must be 255 characters or less").default(""),
+    type: z.enum(["text", "boolean", "option", "number"]),
+    options: z.array(z.string(), "Must have at least 2 options").default([]),
+  })
+  .refine((data) => (data.type === "option" ? data.options.length > 1 : true), {
+    error: "Must have at least 2 options",
+    path: ["options"],
+  });
 
 type CreateMetadataActionReturn = ActionFailure<{
   createMetadata: {
@@ -37,6 +43,7 @@ type CreateMetadataActionReturn = ActionFailure<{
       fieldName?: string;
       description?: string;
       type?: string;
+      options?: string;
       root?: string;
     };
   };
@@ -56,23 +63,30 @@ export const actions: Actions = {
         acc[issue.path[0]] = issue.message;
         return acc;
       }, {});
-      console.log(errorMap);
       return fail(400, { createMetadata: { errorMap } });
     }
 
-    console.log(data);
+    try {
+      await db.insert(schema.metadataFields).values({
+        name: data.fieldName,
+        description: data.description,
+        config:
+          data.type === "option" ? { type: data.type, options: data.options } : { type: data.type },
+        creatorId: user.userId,
+      });
+    } catch (e) {
+      if (e instanceof Error && "code" in e) {
+        if (e.code === "SQLITE_CONSTRAINT_UNIQUE") {
+          return fail(400, {
+            createMetadata: { errorMap: { fieldName: "Field name already exists" } },
+          });
+        }
+      }
 
-    // try {
-    //   await db.insert(schema.labels).values({
-    //     name: data.fieldName,
-    //     description: data.description,
-    //     creatorId: user.userId,
-    //   });
-    // } catch (e) {
-    //   console.error(e);
-    //   return fail(500, {
-    //     createMetadata: { errorMap: { root: "Something went wrong" } },
-    //   });
-    // }
+      console.error(e);
+      return fail(500, {
+        createMetadata: { errorMap: { root: "Something went wrong" } },
+      });
+    }
   },
 };

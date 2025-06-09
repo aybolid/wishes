@@ -32,7 +32,7 @@
   );
 
   type Props = {
-    children: Snippet<[]>;
+    children?: Snippet<[]>;
     isLoading?: boolean;
   } & Button.RootProps;
 
@@ -53,5 +53,5 @@
   {#if isLoading}
     <Loader2 size={16} class="animate-spin" />
   {/if}
-  {@render children()}
+  {@render children?.()}
 </Button.Root>

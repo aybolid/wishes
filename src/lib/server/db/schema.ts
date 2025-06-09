@@ -9,6 +9,7 @@ export const users = sqliteTable("users", {
 
 export const usersRelations = relations(users, ({ many }) => ({
   labels: many(labels, { relationName: "labels" }),
+  metadataFields: many(metadataFields, { relationName: "metadataFields" }),
 }));
 
 export type User = typeof users.$inferSelect;
@@ -43,3 +44,47 @@ export const labelsRelations = relations(labels, ({ one }) => ({
 
 export type Label = typeof labels.$inferSelect;
 export type LabelWithCreator = Label & { creator: SafeUser };
+
+export const metadataFields = sqliteTable("metadata_fields", {
+  fieldId: integer("field_id").primaryKey(),
+  name: text("name").notNull().unique(),
+  description: text("description").notNull(),
+  creatorId: text("creator_id")
+    .notNull()
+    .references(() => users.userId),
+  config: text({ mode: "json" }).notNull().$type<MetadataFieldConfig>(),
+});
+
+export const metadataFieldsRelations = relations(metadataFields, ({ one }) => ({
+  creator: one(users, {
+    relationName: "creator",
+    fields: [metadataFields.creatorId],
+    references: [users.userId],
+  }),
+}));
+
+export type MetadataFieldConfig =
+  | TextMetadataFieldConfig
+  | BooleanMetadataFieldConfig
+  | OptionMetadataFieldConfig
+  | NumberMetadataFieldConfig;
+
+export type TextMetadataFieldConfig = {
+  type: "text";
+};
+
+export type BooleanMetadataFieldConfig = {
+  type: "boolean";
+};
+
+export type OptionMetadataFieldConfig = {
+  type: "option";
+  options: string[];
+};
+
+export type NumberMetadataFieldConfig = {
+  type: "number";
+};
+
+export type MetadataField = typeof metadataFields.$inferSelect;
+export type MetadataFieldWithCreator = MetadataField & { creator: SafeUser };
