@@ -5,6 +5,7 @@
   type Props = {
     value?: string;
     placeholder?: string;
+    id?: string;
   } & Omit<Select.RootProps, "value" | "onValueChange" | "type">;
 
   let { value = $bindable(), placeholder = "Select", ...props }: Props = $props();
@@ -16,6 +17,7 @@
 
 <Select.Root type="single" onValueChange={(v) => (value = v)} {...props}>
   <Select.Trigger
+    id={props.id || props.name}
     class="focus:ring-primary bg-background data-placeholder:text-muted-foreground/80 inline-flex w-full items-center rounded-sm border px-3 py-1 select-none focus:ring"
     aria-label="Select an option"
   >

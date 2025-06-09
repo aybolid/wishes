@@ -1,20 +1,21 @@
 <script lang="ts">
-  import type { Label } from "$lib/server/db/schema";
-  import { stringToColor } from "$lib/utils/styles";
+  import { cn } from "$lib/utils/styles";
+  import { Label } from "bits-ui";
 
-  type Props = {
-    label: Label;
-  };
+  type Props = { required?: boolean } & Label.RootProps;
 
-  const { label }: Props = $props();
-
-  const { color } = $derived(stringToColor(label.name));
+  const { children, required = false, ...props }: Props = $props();
 </script>
 
-<span
-  class="inline-flex items-center gap-1 rounded-md border px-1"
-  style={`border-color: ${color}; background-color: ${color}20`}
+<Label.Root
+  {...props}
+  class={cn(
+    "text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70",
+    props.class,
+  )}
 >
-  <span class="size-3 rounded-full" style={`background-color: ${color}`}></span>
-  <span class="text-sm">{label.name}</span>
-</span>
+  {@render children?.()}
+  {#if required}
+    <span class="text-destructive">*</span>
+  {/if}
+</Label.Root>

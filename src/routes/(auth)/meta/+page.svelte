@@ -6,12 +6,11 @@
   import type { ActionData, PageServerData } from "./$types";
   import Textarea from "$lib/components/ui/textarea.svelte";
   import type { Label as LabelType } from "$lib/server/db/schema";
-  import { Edit, Plus, Trash } from "lucide-svelte";
+  import { Plus } from "lucide-svelte";
   import { toast } from "svelte-sonner";
-  import Label from "$lib/components/ui/label.svelte";
-  import ConfirmPopover from "$lib/components/ui/confirm-popover.svelte";
-  import Avatar from "$lib/components/ui/avatar.svelte";
   import Select from "$lib/components/ui/select.svelte";
+  import Label from "$lib/components/ui/label.svelte";
+  import ErrorMessage from "$lib/components/ui/error-message.svelte";
 
   const { form, data }: { form: ActionData; data: PageServerData } = $props();
 
@@ -62,62 +61,8 @@
 </div>
 
 {#if labels.length === 0}
-  <p class="text-muted-foreground mt-4 text-center">No labels yet</p>
+  <p class="text-muted-foreground mt-4 text-center">No metadata yet</p>
 {/if}
-
-<section class="mt-4 grid gap-4">
-  {#each labels as label}
-    {@const isUserCreator = label.creatorId === data.user.userId}
-    <div class="flex flex-col gap-2 rounded-sm border p-3">
-      <div class="flex items-center justify-between gap-2">
-        <Label {label} />
-        <a href={`/user/${label.creator.userId}`} class="ml-auto inline-flex items-center gap-1">
-          <Avatar username={label.creator.username} />
-          <span class="-mt-1">
-            {label.creator.username}
-          </span>
-        </a>
-      </div>
-      {#if label.description}
-        <p class="text-muted-foreground mt-2 flex-1">{label.description}</p>
-      {/if}
-      {#if isUserCreator}
-        <div class="mt-2 flex items-center justify-end gap-2">
-          <Button
-            title="Edit"
-            size="icon"
-            variant="secondary"
-            onclick={() => {
-              labelToEdit = label;
-              isEditDrawerOpen = true;
-            }}
-          >
-            <Edit size={16} />
-          </Button>
-          <ConfirmPopover
-            title={`Delete "${label.name}" Label`}
-            message="Are you sure you want to delete this label?"
-            confirmText="Delete"
-            confirmForm={{
-              method: "post",
-              action: "?/deleteLabel",
-              enhance: ({ formData }) => {
-                formData.set("labelId", label.labelId.toString());
-                return ({ update }) => {
-                  update();
-                };
-              },
-            }}
-          >
-            <Button type="button" title="Delete" size="icon" variant="destructive">
-              <Trash size={16} />
-            </Button>
-          </ConfirmPopover>
-        </div>
-      {/if}
-    </div>
-  {/each}
-</section>
 
 <Drawer
   isOpen={isCreateDrawerOpen}
@@ -136,22 +81,19 @@
       };
     }}
   >
-    <Input
-      forceError={!!createErrorMap?.root}
-      error={createErrorMap?.fieldName}
-      label="Name"
-      placeholder="Field name"
-      name="fieldName"
-      required
-    />
-    <Textarea
-      forceError={!!createErrorMap?.root}
-      error={createErrorMap?.description}
-      label="Description"
-      name="description"
-      placeholder="Field description"
-    />
+    <Label for="fieldName" required>Name</Label>
+    <Input placeholder="Field name" name="fieldName" id="fieldName" required />
+    <ErrorMessage>{createErrorMap?.fieldName}</ErrorMessage>
+
+    <Label for="description">Description</Label>
+    <Textarea id="description" name="description" placeholder="Field description" />
+    <ErrorMessage>{createErrorMap?.description}</ErrorMessage>
+
+    <Label for="type" required>Type</Label>
     <Select
+      required
+      id="type"
+      name="type"
       items={[
         { value: "text", label: "Text" },
         { value: "boolean", label: "Boolean" },
@@ -159,60 +101,10 @@
         { value: "number", label: "Number" },
       ]}
     />
+    <ErrorMessage>{createErrorMap?.type}</ErrorMessage>
 
-    {#if createErrorMap?.root}
-      <p class="text-destructive text-sm">{createErrorMap.root}</p>
-    {/if}
+    <ErrorMessage>{createErrorMap?.root}</ErrorMessage>
 
     <Button isLoading={isCreatingField} class="mt-4 w-full">Add</Button>
-  </form>
-</Drawer>
-
-<Drawer
-  isOpen={labelToEdit !== undefined && isEditDrawerOpen}
-  onClose={closeEditLabelDrawer}
-  title="Edit Label"
->
-  <form
-    bind:this={editFormElement}
-    class="grid gap-2"
-    method="post"
-    action="?/updateLabel"
-    use:enhance={({ formData }) => {
-      if (!labelToEdit) return;
-
-      formData.set("labelId", labelToEdit.labelId.toString());
-      isUpdatingLabel = true;
-
-      return ({ update }) => {
-        isUpdatingLabel = false;
-        closeEditLabelDrawer();
-        update({ reset: false });
-      };
-    }}
-  >
-    <Input
-      error={updateErrorMap?.labelName}
-      forceError={!!updateErrorMap?.root}
-      label="Name"
-      placeholder="Label name"
-      name="labelName"
-      required
-      defaultValue={labelToEdit?.name ?? ""}
-    />
-    <Textarea
-      error={updateErrorMap?.description}
-      forceError={!!updateErrorMap?.root}
-      label="Description"
-      name="description"
-      placeholder="Label description"
-      defaultValue={labelToEdit?.description ?? ""}
-    />
-
-    {#if updateErrorMap?.root}
-      <p class="text-destructive text-sm">{updateErrorMap.root}</p>
-    {/if}
-
-    <Button isLoading={isUpdatingLabel} class="mt-4 w-full">Update</Button>
   </form>
 </Drawer>
