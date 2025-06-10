@@ -1,7 +1,6 @@
 <script lang="ts">
   import { enhance } from "$app/forms";
   import { page } from "$app/state";
-  import Avatar from "$lib/components/ui/avatar.svelte";
   import Button from "$lib/components/ui/button.svelte";
   import Popover from "$lib/components/ui/popover.svelte";
   import type { MetadataFieldWithCreator } from "$lib/server/db/schema";
@@ -28,15 +27,17 @@
     <div class="flex items-center justify-between gap-2">
       <h3 class="font-semibold">
         {field.name}
-        <span class="text-primary font-normal">({field.config.type})</span>
       </h3>
       <UserLink user={field.creator} />
     </div>
     {#if field.description}
       <p class="text-muted-foreground mt-2 flex-1">{field.description}</p>
     {/if}
+    <p class="mt-4">
+      Type: <span class="text-primary uppercase">{field.config.type}</span>
+    </p>
     {#if field.config.type === "option"}
-      <p class="mt-4">
+      <p>
         Possible values:
         <span class="text-muted-foreground">
           {field.config.options.join(", ")}

@@ -1,27 +1,59 @@
 <script lang="ts">
   import { Select } from "bits-ui";
   import { Check, ChevronDown, ChevronsUpDown, ChevronUp } from "lucide-svelte";
+  import type { Snippet } from "svelte";
 
   type Props = {
-    value?: string;
     placeholder?: string;
     id?: string;
-  } & Omit<Select.RootProps, "value" | "onValueChange" | "type">;
+    itemRender?: Snippet<[{ item: { label: string; value: string } }]>;
+  } & ({ type?: "multiple"; value?: string[] } | { type?: "single"; value?: string }) &
+    Omit<Select.RootProps, "value" | "onValueChange" | "type">;
 
-  let { value = $bindable(), placeholder = "Select", ...props }: Props = $props();
+  let {
+    value = $bindable(),
+    type = "single",
+    placeholder = "Select",
+    itemRender,
+    ...props
+  }: Props = $props();
 
-  const selectedLabel = $derived(
-    value ? props.items?.find((item) => item.value === value)?.label : placeholder,
+  const selected = $derived(
+    type === "multiple"
+      ? props.items?.filter((item) => value?.includes(item.value))
+      : props.items?.find((item) => value === item.value),
   );
 </script>
 
-<Select.Root type="single" onValueChange={(v) => (value = v)} {...props}>
+<Select.Root {type} onValueChange={(v: string | string[]) => (value = v)} {...props}>
   <Select.Trigger
     id={props.id || props.name}
-    class="focus:ring-primary bg-background data-placeholder:text-muted-foreground/80 inline-flex w-full items-center rounded-sm border px-3 py-1 select-none focus:ring"
+    class="focus:ring-primary bg-background data-placeholder:text-muted-foreground/80 inline-flex min-h-8.5 w-full items-center rounded-sm border px-3 py-1 select-none focus:ring"
     aria-label="Select an option"
   >
-    {selectedLabel}
+    {#if selected === undefined}
+      {placeholder}
+    {:else if Array.isArray(selected) && selected.length > 0}
+      <!---->
+      {#if itemRender}
+        <div class="flex flex-wrap gap-2">
+          {#each selected as item, i (i + item.value)}
+            {@render itemRender({ item })}
+          {/each}
+        </div>
+      {:else}
+        {selected.length} selected
+      {/if}
+    {:else if !Array.isArray(selected)}
+      <!---->
+      {#if itemRender}
+        {@render itemRender({ item: selected })}
+      {:else}
+        {selected.label}
+      {/if}
+    {:else}
+      {placeholder}
+    {/if}
     <ChevronsUpDown size={16} class="text-muted-foreground ml-auto" />
   </Select.Trigger>
 
@@ -37,13 +69,17 @@
       <Select.Viewport class="p-1">
         {#each props.items ?? [] as item, i (i + item.value)}
           <Select.Item
-            class="data-highlighted:bg-muted flex h-10 w-full items-center rounded-sm py-3 pr-1.5 pl-5 text-sm capitalize outline-hidden select-none data-disabled:opacity-50"
+            class="data-highlighted:bg-muted/20 flex h-10 w-full items-center rounded-sm py-3 pr-1.5 pl-5 text-sm capitalize outline-hidden select-none data-disabled:opacity-50"
             value={item.value}
             label={item.label}
             disabled={item.disabled}
           >
             {#snippet children({ selected })}
-              {item.label}
+              {#if itemRender}
+                {@render itemRender({ item })}
+              {:else}
+                {item.label}
+              {/if}
               {#if selected}
                 <div class="ml-auto">
                   <Check size={16} class="text-primary" />
