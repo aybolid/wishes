@@ -14,7 +14,8 @@ export function stringToColor(str: string) {
 
   const rgb = [0, 0, 0];
   for (let i = 0; i < 3; i++) {
-    rgb[i] = (hash >> (i * 8)) & 0xff;
+    // Keep values in higher range (e.g., 127–255)
+    rgb[i] = 127 + ((hash >> (i * 8)) & 0x7f); // 0x7f = 127
   }
 
   const color = `#${rgb.map((c) => c.toString(16).padStart(2, "0")).join("")}`;

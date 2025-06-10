@@ -7,6 +7,7 @@
   import type { MetadataFieldWithCreator } from "$lib/server/db/schema";
   import { Edit, Trash } from "lucide-svelte";
   import type { PageData } from "./$types";
+  import UserLink from "$lib/components/common/user-link.svelte";
 
   type Props = {
     fields: MetadataFieldWithCreator[];
@@ -23,12 +24,13 @@
 
 {#snippet fieldCard(field: MetadataFieldWithCreator)}
   {@const isUserCreator = field.creatorId === user.userId}
-  <div class="rounded-sm border p-4">
+  <div class="rounded-sm border p-3">
     <div class="flex items-center justify-between gap-2">
       <h3 class="font-semibold">
         {field.name}
         <span class="text-primary font-normal">({field.config.type})</span>
       </h3>
+      <UserLink user={field.creator} />
     </div>
     {#if field.description}
       <p class="text-muted-foreground mt-2 flex-1">{field.description}</p>

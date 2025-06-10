@@ -6,14 +6,17 @@
 
   type Props = {
     trigger?: Snippet<[{ props: Record<string, unknown> }]>;
-    children?: Snippet<[]>;
+    children?: Snippet<[{ setOpen: (open: boolean) => void }]>;
     title?: string;
     description?: string;
+    onOpenChange?: (open: boolean) => void;
   };
-  const { trigger, children, title, description }: Props = $props();
+  const { trigger, children, title, description, onOpenChange }: Props = $props();
+
+  let open = $state(false);
 </script>
 
-<Dialog.Root>
+<Dialog.Root bind:open {onOpenChange}>
   <Dialog.Trigger>
     {#snippet child({ props })}
       {@render trigger?.({ props })}
@@ -42,7 +45,7 @@
       {#if title || description}
         <Separator.Root class="bg-border -mx-4 my-4 block h-px" />
       {/if}
-      {@render children?.()}
+      {@render children?.({ setOpen: (b) => (open = b) })}
     </Dialog.Content>
   </Dialog.Portal>
 </Dialog.Root>

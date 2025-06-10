@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { SafeUser } from "$lib/server/db/schema";
-  import { stringToColor } from "$lib/utils/styles";
+  import { cn, stringToColor } from "$lib/utils/styles";
   import { Avatar } from "bits-ui";
 
   type Props = {
@@ -15,12 +15,14 @@
 
 <Avatar.Root
   delayMs={200}
-  class="data-[status=loaded]:border-foreground bg-muted text-muted-foreground size-6 rounded-full border text-[17px] font-medium uppercase data-[status=loading]:border-transparent"
+  class="data-[status=loaded]:border-foreground bg-muted text-muted-foreground size-6 rounded-full text-[17px] font-medium uppercase data-[status=loading]:border-transparent"
 >
   <div
     style="background-color: {color}"
-    class="flex size-full items-center justify-center overflow-hidden rounded-full border-2 border-transparent"
+    class="flex size-full items-center justify-center overflow-hidden rounded-sm"
   >
-    <Avatar.Fallback class={isDark ? "text-white" : "text-black"}>{fallback}</Avatar.Fallback>
+    <Avatar.Fallback class={cn("leading-0 tracking-tight", isDark ? "text-white" : "text-black")}>
+      {fallback}
+    </Avatar.Fallback>
   </div>
 </Avatar.Root>

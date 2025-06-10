@@ -3,6 +3,7 @@
   import type { LayoutServerData } from "./$types";
   import { cn } from "$lib/utils/styles";
   import Avatar from "$lib/components/ui/avatar.svelte";
+  import UserLink from "$lib/components/common/user-link.svelte";
 
   const { data, children }: { data: LayoutServerData; children: Snippet<[]> } = $props();
   const { user, pathname } = $derived(data);
@@ -31,12 +32,9 @@
           )}>{label}</a
         >
       {/each}
-      <a href={`/user/${user.userId}`} class="ml-auto inline-flex items-center gap-1">
-        <Avatar {user} />
-        <span class="-mt-1">
-          {user.username}
-        </span>
-      </a>
+      <div class="ml-auto">
+        <UserLink {user} />
+      </div>
     </nav>
   </header>
 {/snippet}
@@ -44,6 +42,6 @@
 <div class="flex h-full w-full flex-col">
   {@render header()}
   <main class="px-4 py-6">
-    <div class="mx-auto w-full max-w-4xl">{@render children()}</div>
+    <div class="mx-auto w-full max-w-3xl">{@render children()}</div>
   </main>
 </div>
