@@ -7,8 +7,9 @@ import { db } from "$lib/server/db";
 import * as schema from "$lib/server/db/schema";
 import { desc, eq } from "drizzle-orm";
 
-export const load: PageServerLoad = async () => {
-  const user = requireAuthenticatedUser();
+export const load: PageServerLoad = async ({ url }) => {
+  const params = new URLSearchParams(url.search);
+  const creatorId = params.get("creator");
 
   const labels: schema.LabelWithCreator[] = await db.query.labels
     .findMany({
@@ -16,13 +17,19 @@ export const load: PageServerLoad = async () => {
         creator: { columns: { passwordHash: false } },
       },
       orderBy: desc(schema.labels.labelId),
+      where: creatorId ? eq(schema.labels.creatorId, creatorId) : undefined,
     })
     .catch((e) => {
       console.error(e);
       return [];
     });
 
-  return { labels, user };
+  const users: schema.SafeUser[] = await db.query.users.findMany({
+    orderBy: desc(schema.users.username),
+    columns: { passwordHash: false },
+  });
+
+  return { labels, users, params: { creatorId } };
 };
 
 const createLabelSchema = z.object({

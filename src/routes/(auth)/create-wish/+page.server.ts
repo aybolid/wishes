@@ -5,6 +5,7 @@ import * as schema from "$lib/server/db/schema";
 import { formDataToObject } from "$lib/utils/forms";
 import { z } from "zod";
 import { fail, type ActionFailure } from "@sveltejs/kit";
+import { requireAuthenticatedUser } from "$lib/server/auth";
 
 export const load: PageServerLoad = async () => {
   const labels: schema.Label[] = await db.query.labels
@@ -32,8 +33,9 @@ const createWishSchema = z
     description: z.string().max(255, "Must be 255 characters or less"),
     labels: z
       .array(z.string())
+      .or(z.string())
       .optional()
-      .transform((v) => v?.map((v) => parseInt(v))),
+      .transform((v) => (typeof v === "string" ? [parseInt(v)] : v?.map((v) => parseInt(v)))),
   })
   .catchall(z.any())
   .superRefine((data, ctx) => {
@@ -71,6 +73,8 @@ type CreateWishActionReturn = ActionFailure<{
 
 export const actions: Actions = {
   default: async ({ request }): Promise<CreateWishActionReturn | void> => {
+    const user = requireAuthenticatedUser();
+
     const formData = await request.formData();
     const dataObject = formDataToObject(formData);
 
@@ -84,6 +88,41 @@ export const actions: Actions = {
       console.log(errorMap);
       return fail(400, { createWish: { errorMap } });
     }
-    console.log(data);
+
+    const { description, labels, url, wishName, ...meta } = data;
+
+    try {
+      const [createdWish] = await db
+        .insert(schema.wishes)
+        .values({
+          name: wishName,
+          url,
+          description,
+          creatorId: user.userId,
+        })
+        .returning();
+
+      if (labels?.length) {
+        await db
+          .insert(schema.wishesToLabels)
+          .values(labels.map((labelId) => ({ wishId: createdWish.wishId, labelId })));
+      }
+
+      if (Object.keys(meta).length) {
+        await db.insert(schema.metadataValues).values(
+          Object.entries(meta).map(([key, value]) => {
+            const metadataFieldId = parseInt(key.replace("meta_", ""));
+            return {
+              wishId: createdWish.wishId,
+              value,
+              metadataFieldId,
+            };
+          }),
+        );
+      }
+    } catch (e) {
+      console.error(e);
+      return fail(500, { createWish: { errorMap: { root: "Something went wrong" } } });
+    }
   },
 };

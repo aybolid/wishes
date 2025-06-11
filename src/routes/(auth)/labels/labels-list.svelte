@@ -13,15 +13,10 @@
 
   const data = $derived(page.data as PageData);
   let form = $derived<ActionData>(page.form);
-
-  type Props = {
-    labels: LabelWithCreator[];
-  };
-  const { labels }: Props = $props();
 </script>
 
-{#if labels.length === 0}
-  <p class="text-muted-foreground mt-4 text-center">No labels yet</p>
+{#if data.labels.length === 0}
+  <p class="text-muted-foreground mt-4 text-center">No labels found</p>
 {/if}
 
 {#snippet labelCard(label: LabelWithCreator)}
@@ -94,7 +89,7 @@
 {/snippet}
 
 <section class="mt-4 grid gap-4">
-  {#each labels as label, i (i + label.labelId.toString())}
+  {#each data.labels as label, i (i + label.labelId.toString())}
     {@render labelCard(label)}
   {/each}
 </section>

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { cn } from "$lib/utils/styles";
   import { Select } from "bits-ui";
   import { Check, ChevronDown, ChevronsUpDown, ChevronUp } from "lucide-svelte";
   import type { Snippet } from "svelte";
@@ -7,7 +8,8 @@
     placeholder?: string;
     id?: string;
     itemRender?: Snippet<[{ item: { label: string; value: string } }]>;
-  } & ({ type?: "multiple"; value?: string[] } | { type?: "single"; value?: string }) &
+    class?: string;
+  } & ({ type?: "multiple" | any; value?: string[] | any } | { type?: "single"; value?: string }) &
     Omit<Select.RootProps, "value" | "onValueChange" | "type">;
 
   let {
@@ -15,20 +17,24 @@
     type = "single",
     placeholder = "Select",
     itemRender,
+    class: className,
     ...props
   }: Props = $props();
 
-  const selected = $derived(
+  let selected = $derived(
     type === "multiple"
       ? props.items?.filter((item) => value?.includes(item.value))
       : props.items?.find((item) => value === item.value),
   );
 </script>
 
-<Select.Root {type} onValueChange={(v: string | string[]) => (value = v)} {...props}>
+<Select.Root {type} onValueChange={(v: string | string[]) => (value = v)} bind:value {...props}>
   <Select.Trigger
     id={props.id || props.name}
-    class="focus:ring-primary bg-background data-placeholder:text-muted-foreground/80 inline-flex min-h-8.5 w-full items-center rounded-sm border px-3 py-1 select-none focus:ring"
+    class={cn(
+      "focus:ring-primary bg-background data-placeholder:text-muted-foreground/80 inline-flex min-h-8.5 w-full items-center rounded-sm border px-3 py-1 select-none focus:ring",
+      className,
+    )}
     aria-label="Select an option"
   >
     {#if selected === undefined}
@@ -69,7 +75,7 @@
       <Select.Viewport class="p-1">
         {#each props.items ?? [] as item, i (i + item.value)}
           <Select.Item
-            class="data-highlighted:bg-muted/20 flex h-10 w-full items-center rounded-sm py-3 pr-1.5 pl-5 text-sm capitalize outline-hidden select-none data-disabled:opacity-50"
+            class="data-highlighted:bg-muted/20 flex h-7 w-full items-center rounded-sm px-1.5 py-3 text-sm capitalize outline-hidden select-none data-disabled:opacity-50"
             value={item.value}
             label={item.label}
             disabled={item.disabled}

@@ -8,8 +8,9 @@ import * as schema from "$lib/server/db/schema";
 import { desc } from "drizzle-orm";
 import { eq } from "drizzle-orm";
 
-export const load: PageServerLoad = async () => {
-  const user = requireAuthenticatedUser();
+export const load: PageServerLoad = async ({ url }) => {
+  const params = new URLSearchParams(url.search);
+  const creatorId = params.get("creator");
 
   const fields: schema.MetadataFieldWithCreator[] = await db.query.metadataFields
     .findMany({
@@ -17,13 +18,24 @@ export const load: PageServerLoad = async () => {
         creator: { columns: { passwordHash: false } },
       },
       orderBy: desc(schema.metadataFields.fieldId),
+      where: creatorId ? eq(schema.metadataFields.creatorId, creatorId) : undefined,
     })
     .catch((e) => {
       console.error(e);
       return [];
     });
 
-  return { fields, user };
+  const users: schema.SafeUser[] = await db.query.users
+    .findMany({
+      orderBy: desc(schema.users.username),
+      columns: { passwordHash: false },
+    })
+    .catch((e) => {
+      console.error(e);
+      return [];
+    });
+
+  return { fields, users, params: { creatorId } };
 };
 
 const createMetadataSchema = z

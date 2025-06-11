@@ -34,16 +34,93 @@ export const labels = sqliteTable("labels", {
     .references(() => users.userId),
 });
 
-export const labelsRelations = relations(labels, ({ one }) => ({
+export const labelsRelations = relations(labels, ({ one, many }) => ({
   creator: one(users, {
     relationName: "creator",
     fields: [labels.creatorId],
     references: [users.userId],
   }),
+  wishes: many(wishes),
 }));
 
 export type Label = typeof labels.$inferSelect;
 export type LabelWithCreator = Label & { creator: SafeUser };
+
+export const wishes = sqliteTable("wishes", {
+  wishId: integer("wish_id").primaryKey(),
+  name: text("name").notNull(),
+  url: text("url").notNull(),
+  description: text("description").notNull(),
+  creatorId: text("creator_id")
+    .notNull()
+    .references(() => users.userId, { onDelete: "cascade", onUpdate: "cascade" }),
+});
+
+export const wishesRelations = relations(wishes, ({ one, many }) => ({
+  creator: one(users, {
+    relationName: "creator",
+    fields: [wishes.creatorId],
+    references: [users.userId],
+  }),
+  metadataValues: many(metadataValues),
+  labels: many(wishesToLabels),
+}));
+
+export const wishesToLabels = sqliteTable("wishes_to_labels", {
+  id: integer("id").primaryKey(),
+  wishId: integer("wish_id")
+    .notNull()
+    .references(() => wishes.wishId, { onDelete: "cascade", onUpdate: "cascade" }),
+  labelId: integer("label_id")
+    .notNull()
+    .references(() => labels.labelId, { onDelete: "cascade", onUpdate: "cascade" }),
+});
+
+export const wishesToLabelsRelations = relations(wishesToLabels, ({ one }) => ({
+  wish: one(wishes, {
+    relationName: "wish",
+    fields: [wishesToLabels.wishId],
+    references: [wishes.wishId],
+  }),
+  label: one(labels, {
+    relationName: "label",
+    fields: [wishesToLabels.labelId],
+    references: [labels.labelId],
+  }),
+}));
+
+export type Wish = typeof wishes.$inferSelect;
+export type CompleteWish = Wish & {
+  creator: SafeUser;
+  metadataValues: MetadataValueWithField[];
+  labels: { labelId: number; label: Label }[];
+};
+
+export const metadataValues = sqliteTable("metadata_values", {
+  valueId: integer("value_id").primaryKey(),
+  value: text("value").notNull(),
+  metadataFieldId: integer("metadata_field_id")
+    .notNull()
+    .references(() => metadataFields.fieldId, { onDelete: "cascade", onUpdate: "cascade" }),
+  wishId: integer("wish_id")
+    .notNull()
+    .references(() => wishes.wishId, { onDelete: "cascade", onUpdate: "cascade" }),
+});
+
+export const metadataValuesRelations = relations(metadataValues, ({ one }) => ({
+  metadataField: one(metadataFields, {
+    relationName: "metadataField",
+    fields: [metadataValues.metadataFieldId],
+    references: [metadataFields.fieldId],
+  }),
+  wish: one(wishes, {
+    fields: [metadataValues.wishId],
+    references: [wishes.wishId],
+  }),
+}));
+
+export type MetadataValue = typeof metadataValues.$inferSelect;
+export type MetadataValueWithField = MetadataValue & { metadataField: MetadataFieldWithCreator };
 
 export const metadataFields = sqliteTable("metadata_fields", {
   fieldId: integer("field_id").primaryKey(),

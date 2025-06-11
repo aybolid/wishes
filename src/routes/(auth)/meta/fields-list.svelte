@@ -8,17 +8,11 @@
   import type { PageData } from "./$types";
   import UserLink from "$lib/components/common/user-link.svelte";
 
-  type Props = {
-    fields: MetadataFieldWithCreator[];
-  };
-
-  let { user } = $derived(page.data as PageData);
-
-  const { fields }: Props = $props();
+  const { fields, user } = $derived(page.data as PageData);
 </script>
 
 {#if fields.length === 0}
-  <p class="text-muted-foreground mt-4 text-center">No metadata yet</p>
+  <p class="text-muted-foreground mt-4 text-center">No metadata found</p>
 {/if}
 
 {#snippet fieldCard(field: MetadataFieldWithCreator)}

@@ -1,21 +1,24 @@
 <script lang="ts">
   import Button from "$lib/components/ui/button.svelte";
-  import type { ActionData, PageServerData } from "./$types";
-  import { Plus } from "lucide-svelte";
+  import type { PageProps } from "./$types";
+  import { Plus, X } from "lucide-svelte";
   import { toast } from "svelte-sonner";
   import LabelsList from "./labels-list.svelte";
   import Drawer from "$lib/components/ui/drawer.svelte";
   import CreateLabelFrom from "./create-label-from.svelte";
+  import Select from "$lib/components/ui/select.svelte";
+  import Avatar from "$lib/components/ui/avatar.svelte";
+  import { goto } from "$app/navigation";
 
-  const { form, data }: { form: ActionData; data: PageServerData } = $props();
+  const { form, data }: PageProps = $props();
 
-  let showCreatedByCurrentUser = $state(false);
+  let selectedCreatorId = $state<string | undefined>(data.params.creatorId ?? undefined);
 
-  const labels = $derived(
-    !showCreatedByCurrentUser
-      ? data.labels
-      : data.labels.filter((label) => label.creatorId === data.user.userId),
-  );
+  $effect(() => {
+    const params = new URLSearchParams();
+    if (selectedCreatorId) params.set("creator", selectedCreatorId);
+    goto(`?${params.toString()}`, { replaceState: true });
+  });
 
   const deleteErrorMap = $derived(form?.deleteLabel?.errorMap);
 
@@ -23,19 +26,41 @@
     if (!deleteErrorMap?.root) return;
     toast.error("Failed to delete label", { description: deleteErrorMap.root });
   });
-
-  function toggleShowCreatedByCurrentUser() {
-    showCreatedByCurrentUser = !showCreatedByCurrentUser;
-  }
 </script>
 
-<div class="flex w-full items-center justify-between">
-  <Button onclick={toggleShowCreatedByCurrentUser} variant="outline" size="sm" class="w-40">
-    {showCreatedByCurrentUser ? "Show All" : "Show Created By Me"}
-  </Button>
+<div class="flex w-full flex-col-reverse items-center justify-between sm:flex-row">
+  <div class="flex w-full flex-col items-center gap-2 sm:flex-row">
+    <div class="flex w-full items-center sm:w-fit">
+      <Select
+        class="w-full rounded-r-none sm:w-fit sm:min-w-[160px]"
+        placeholder="Filter by creator"
+        bind:value={selectedCreatorId}
+        items={data.users.map((user) => ({
+          value: user.userId.toString(),
+          label: user.username,
+        }))}
+      >
+        {#snippet itemRender({ item })}
+          <span class="flex items-center gap-2">
+            <Avatar user={{ userId: item.value, username: item.label }} />
+            <span class="font-medium">{item.label}</span>
+          </span>
+        {/snippet}
+      </Select>
+      <Button
+        onclick={() => (selectedCreatorId = undefined)}
+        disabled={!selectedCreatorId}
+        size="icon"
+        variant="outline"
+        class="size-8.5 rounded-l-none border-l-0"
+      >
+        <X />
+      </Button>
+    </div>
+  </div>
   <Drawer title="Add Label" description="Create label to organize your wishes">
     {#snippet trigger({ props })}
-      <Button {...props}>
+      <Button {...props} class="mb-4 w-full sm:mb-0 sm:w-fit">
         <Plus />
         Add Label
       </Button>
@@ -44,4 +69,4 @@
   </Drawer>
 </div>
 
-<LabelsList {labels} />
+<LabelsList />

@@ -30,16 +30,13 @@
 </h1>
 
 <form class="mt-4 grid gap-3" method="post" use:enhance>
-  <Label for="url" required>URL</Label>
-  <Input id="url" name="url" placeholder="https://my-wish.com" required />
-  <p class="text-muted-foreground text-sm">
-    Add URL first and we will try to populate other fields
-  </p>
-  <ErrorMessage>{errorMap?.url}</ErrorMessage>
-
-  <Label for="wishName" required class="mt-4">Name</Label>
+  <Label for="wishName" required>Name</Label>
   <Input id="wishName" name="wishName" placeholder="Wish name" required />
   <ErrorMessage>{errorMap?.wishName}</ErrorMessage>
+
+  <Label for="url" required>URL</Label>
+  <Input id="url" name="url" placeholder="https://my-wish.com" required />
+  <ErrorMessage>{errorMap?.url}</ErrorMessage>
 
   <Label for="description">Description</Label>
   <Textarea id="description" name="description" placeholder="Some description" />
