@@ -97,17 +97,17 @@
 
 <section class="mt-4 grid gap-3">
   {#each data.wishes as wish}
-    <div class="rounded-sm border p-3">
-      <div class="flex items-center justify-between gap-2">
+    <div class="overflow-hidden rounded-sm border">
+      <div class="flex items-center justify-between gap-2 px-3 py-3">
         <h3 class="font-semibold">
           {wish.name}
         </h3>
         <UserLink user={wish.creator} />
       </div>
       {#if wish.description}
-        <p class="text-muted-foreground mt-2">{wish.description}</p>
+        <p class="text-muted-foreground mt-2 px-3">{wish.description}</p>
       {/if}
-      <div class="mt-4 flex flex-col items-center justify-between gap-4 sm:flex-row">
+      <div class="mt-4 flex flex-col items-center justify-between gap-4 px-3 pb-3 sm:flex-row">
         <div class="flex w-full flex-grow flex-wrap items-center justify-start gap-2">
           {#each wish.labels.slice(0, LABELS_TO_SHOW) as { label }}
             <LabelTag {label} />
@@ -128,16 +128,27 @@
           {/if}
         </div>
         <div class="flex w-full items-center justify-end gap-2 sm:w-fit">
-          <Button href={wish.url} target="_blank" size="sm" variant="outline">
+          <Button href={wish.url} target="_blank" size="sm" variant="secondary">
             <SquareArrowOutUpRight />
             Goto
           </Button>
-          <Button href={`/wish/${wish.wishId}`} size="sm" variant="secondary">
-            <Eye />
-            View
-          </Button>
         </div>
       </div>
+
+      {#if wish.metadataValues.length > 0}
+        <div class="bg-muted/40 border-t p-3">
+          {#each wish.metadataValues as metadataValue}
+            <p class="text-muted-foreground text-sm">
+              {metadataValue.metadataField.name}:
+              {#if metadataValue.metadataField.config.type === "boolean"}
+                <span class="text-foreground">{metadataValue.value === "true" ? "Yes" : "No"}</span>
+              {:else}
+                <span class="text-foreground">{metadataValue.value}</span>
+              {/if}
+            </p>
+          {/each}
+        </div>
+      {/if}
     </div>
   {/each}
 </section>
