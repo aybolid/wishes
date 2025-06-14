@@ -32,7 +32,7 @@ export const labels = sqliteTable("labels", {
   description: text("description").notNull(),
   creatorId: text("creator_id")
     .notNull()
-    .references(() => users.userId),
+    .references(() => users.userId, { onDelete: "cascade", onUpdate: "cascade" }),
 });
 
 export const labelsRelations = relations(labels, ({ one, many }) => ({
@@ -124,7 +124,7 @@ export const metadataFields = sqliteTable("metadata_fields", {
   description: text("description").notNull(),
   creatorId: text("creator_id")
     .notNull()
-    .references(() => users.userId),
+    .references(() => users.userId, { onDelete: "cascade", onUpdate: "cascade" }),
   config: text({ mode: "json" }).notNull().$type<MetadataFieldConfig>(),
 });
 

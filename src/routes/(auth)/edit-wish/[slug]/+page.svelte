@@ -189,7 +189,7 @@
     {#snippet trigger({ props })}
       <Button variant="destructive" {...props}>Delete Wish</Button>
     {/snippet}
-    <h3 class="font-semibold">Delete label</h3>
+    <h3 class="font-semibold">Delete wish</h3>
     <p class="text-muted-foreground mt-1 mb-3 text-sm">
       Are you sure you want to delete this wish?
     </p>

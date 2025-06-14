@@ -13,7 +13,7 @@
   let isSubmitting = $state(false);
 </script>
 
-<main class="grid h-full place-items-center">
+<main class="grid h-full place-items-center p-4">
   <form
     method="post"
     class="grid w-full max-w-sm gap-2 rounded-sm border p-6"
