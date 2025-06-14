@@ -8,6 +8,11 @@
   import Textarea from "$lib/components/ui/textarea.svelte";
   import type { ActionData } from "./$types";
 
+  type Props = {
+    onCreate?: () => void;
+  };
+  const { onCreate = () => {} }: Props = $props();
+
   const form = $derived<ActionData>(page.form);
   const createErrorMap = $derived(form?.createLabel?.errorMap);
 
@@ -20,8 +25,11 @@
   action="?/createLabel"
   use:enhance={() => {
     isCreatingLabel = true;
-    return ({ update }) => {
+    return ({ update, result }) => {
       isCreatingLabel = false;
+      if (result.type === "success") {
+        onCreate();
+      }
       update();
     };
   }}

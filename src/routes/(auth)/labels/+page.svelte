@@ -65,7 +65,9 @@
         Add Label
       </Button>
     {/snippet}
-    <CreateLabelFrom />
+    {#snippet children({ setOpen })}
+      <CreateLabelFrom onCreate={() => setOpen(false)} />
+    {/snippet}
   </Drawer>
 </div>
 

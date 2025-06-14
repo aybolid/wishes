@@ -64,7 +64,9 @@
         Add Metadata
       </Button>
     {/snippet}
-    <CreateMetaForm />
+    {#snippet children({ setOpen })}
+      <CreateMetaForm onCreate={() => setOpen(false)} />
+    {/snippet}
   </Drawer>
 </div>
 

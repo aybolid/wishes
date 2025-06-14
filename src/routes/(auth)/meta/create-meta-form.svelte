@@ -10,6 +10,11 @@
   import type { ActionData } from "./$types";
   import { page } from "$app/state";
 
+  type Props = {
+    onCreate?: () => void;
+  };
+  const { onCreate = () => {} }: Props = $props();
+
   const form = $derived<ActionData>(page.form);
 
   const createErrorMap = $derived(form?.createMetadata?.errorMap);
@@ -32,8 +37,11 @@
       }
     }
     isCreatingField = true;
-    return ({ update }) => {
+    return ({ update, result }) => {
       isCreatingField = false;
+      if (result.type === "success") {
+        onCreate();
+      }
       update();
     };
   }}
