@@ -52,7 +52,7 @@
 
           <h3 class="font-semibold">Delete field</h3>
           <p class="text-muted-foreground mt-1 mb-3 text-sm">
-            Are you sure you want to delete <strong>{field.name}</strong> field?
+            Are you sure you want to delete this field?
           </p>
           <form
             class="ml-auto w-fit"

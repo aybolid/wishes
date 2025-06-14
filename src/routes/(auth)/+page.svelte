@@ -1,6 +1,6 @@
 <script lang="ts">
   import Button from "$lib/components/ui/button.svelte";
-  import { Eye, Gift, SquareArrowOutUpRight, X } from "lucide-svelte";
+  import { Edit, Eye, Gift, SquareArrowOutUpRight, X } from "lucide-svelte";
   import type { PageProps } from "./$types";
   import UserLink from "$lib/components/common/user-link.svelte";
   import LabelTag from "$lib/components/common/label-tag.svelte";
@@ -97,6 +97,7 @@
 
 <section class="mt-4 grid gap-3">
   {#each data.wishes as wish}
+    {@const isUserCreator = wish.creatorId === data.user.userId}
     <div class="overflow-hidden rounded-sm border">
       <div class="flex items-center justify-between gap-2 px-3 py-3">
         <h3 class="font-semibold">
@@ -128,6 +129,12 @@
           {/if}
         </div>
         <div class="flex w-full items-center justify-end gap-2 sm:w-fit">
+          {#if isUserCreator}
+            <Button href={`/edit-wish/${wish.wishId}`} size="sm" variant="outline">
+              <Edit />
+              Edit
+            </Button>
+          {/if}
           <Button href={wish.url} target="_blank" size="sm" variant="secondary">
             <SquareArrowOutUpRight />
             Goto

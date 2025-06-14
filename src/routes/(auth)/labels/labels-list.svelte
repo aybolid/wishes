@@ -64,7 +64,7 @@
           {/snippet}
           <h3 class="font-semibold">Delete label</h3>
           <p class="text-muted-foreground mt-1 mb-3 text-sm">
-            Are you sure you want to delete <strong>{label.name}</strong> label?
+            Are you sure you want to delete this label?
           </p>
           <form
             class="ml-auto w-fit"

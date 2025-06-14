@@ -10,12 +10,29 @@
   import Switch from "$lib/components/ui/switch.svelte";
   import { enhance } from "$app/forms";
   import ErrorMessage from "$lib/components/ui/error-message.svelte";
+  import Popover from "$lib/components/ui/popover.svelte";
+  import { toast } from "svelte-sonner";
 
   const { data, form }: PageProps = $props();
 
-  const errorMap = $derived(form?.createWish?.errorMap);
+  const errorMap = $derived(form?.updateWish?.errorMap);
 
-  let selectedMetadataIds = $state<string[]>();
+  $effect(() => {
+    if (form?.deleteWish?.errorMap.root) {
+      toast.error("Failed to delete wish", { description: form.deleteWish.errorMap.root });
+    }
+  });
+
+  let selectedMetadataIds = $state<string[]>(
+    data.wish.metadataValues.map(({ metadataFieldId }) => metadataFieldId.toString()),
+  );
+
+  const metadataValues = $derived(
+    data.wish.metadataValues.reduce<Record<number, string>>((acc, curr) => {
+      acc[curr.metadataFieldId] = curr.value;
+      return acc;
+    }, {}),
+  );
 
   const selectedMetadataFields = $derived(
     selectedMetadataIds?.map(
@@ -23,39 +40,60 @@
     ) ?? [],
   );
 
-  let isCreating = $state(false);
+  let isUpdating = $state(false);
 </script>
 
 <h1 class="flex items-center gap-2 text-lg font-semibold">
-  Create Wish
+  Edit Wish
   <Gift />
 </h1>
 
 <form
   class="mt-4 grid gap-3"
   method="post"
-  use:enhance={() => {
-    isCreating = true;
+  action="?/updateWish"
+  use:enhance={({ formData }) => {
+    isUpdating = true;
+    formData.set("wishId", data.wish.wishId.toString());
+
     return ({ update }) => {
-      isCreating = false;
+      isUpdating = false;
       update();
     };
   }}
 >
   <Label for="wishName" required>Name</Label>
-  <Input id="wishName" name="wishName" placeholder="Wish name" required />
+  <Input
+    id="wishName"
+    name="wishName"
+    placeholder="Wish name"
+    required
+    defaultValue={data.wish.name}
+  />
   <ErrorMessage>{errorMap?.wishName}</ErrorMessage>
 
   <Label for="url" required>URL</Label>
-  <Input id="url" name="url" placeholder="https://my-wish.com" required />
+  <Input
+    id="url"
+    name="url"
+    placeholder="https://my-wish.com"
+    required
+    defaultValue={data.wish.url}
+  />
   <ErrorMessage>{errorMap?.url}</ErrorMessage>
 
   <Label for="description">Description</Label>
-  <Textarea id="description" name="description" placeholder="Some description" />
+  <Textarea
+    id="description"
+    name="description"
+    placeholder="Some description"
+    defaultValue={data.wish.description}
+  />
   <ErrorMessage>{errorMap?.description}</ErrorMessage>
 
   <Label class="mt-4" for="labels">Labels</Label>
   <Select
+    value={data.wish.labels.map(({ labelId }) => labelId.toString())}
     id="labels"
     type="multiple"
     name="labels"
@@ -95,13 +133,32 @@
               name={id}
               {id}
               items={field.config.options.map((option) => ({ value: option, label: option }))}
+              value={metadataValues[field.fieldId]}
             />
           {:else if field.config.type === "text"}
-            <Input name={id} {id} required class="w-full" />
+            <Input
+              name={id}
+              {id}
+              required
+              class="w-full"
+              defaultValue={metadataValues[field.fieldId]}
+            />
           {:else if field.config.type === "number"}
-            <Input name={id} {id} required class="w-full" type="number" />
+            <Input
+              name={id}
+              {id}
+              required
+              class="w-full"
+              type="number"
+              value={metadataValues[field.fieldId]}
+            />
           {:else if field.config.type === "boolean"}
-            <Switch label={field.name} {id} name={id} />
+            <Switch
+              label={field.name}
+              {id}
+              name={id}
+              checked={metadataValues[field.fieldId] === "true"}
+            />
           {/if}
           <Button
             type="button"
@@ -121,5 +178,34 @@
     </section>
   {/if}
 
-  <Button type="submit" class="mt-4 ml-auto w-fit" isLoading={isCreating}>Create Wish</Button>
+  <Button type="submit" class="mt-4 ml-auto w-fit" isLoading={isUpdating}>Update Wish</Button>
 </form>
+
+<h3 class="text-destructive mt-4 text-lg font-semibold">Danger Zone</h3>
+<div class="border-destructive mt-2 w-full rounded-sm border border-dashed p-3">
+  <Popover>
+    {#snippet trigger({ props })}
+      <Button variant="destructive" {...props}>Delete Wish</Button>
+    {/snippet}
+    <h3 class="font-semibold">Delete label</h3>
+    <p class="text-muted-foreground mt-1 mb-3 text-sm">
+      Are you sure you want to delete this wish?
+    </p>
+    <form
+      class="ml-auto w-fit"
+      method="post"
+      action="?/deleteWish"
+      use:enhance={({ formData }) => {
+        formData.set("wishId", data.wish.wishId.toString());
+        return ({ update }) => {
+          update();
+        };
+      }}
+    >
+      <Button type="submit" size="sm" variant="destructive">
+        <Trash />
+        Delete
+      </Button>
+    </form>
+  </Popover>
+</div>

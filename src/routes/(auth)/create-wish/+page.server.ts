@@ -4,7 +4,7 @@ import type { Actions, PageServerLoad } from "./$types";
 import * as schema from "$lib/server/db/schema";
 import { formDataToObject } from "$lib/utils/forms";
 import { z } from "zod";
-import { fail, type ActionFailure } from "@sveltejs/kit";
+import { fail, redirect, type ActionFailure } from "@sveltejs/kit";
 import { requireAuthenticatedUser } from "$lib/server/auth";
 
 export const load: PageServerLoad = async () => {
@@ -124,5 +124,7 @@ export const actions: Actions = {
       console.error(e);
       return fail(500, { createWish: { errorMap: { root: "Something went wrong" } } });
     }
+
+    return redirect(302, "/");
   },
 };
