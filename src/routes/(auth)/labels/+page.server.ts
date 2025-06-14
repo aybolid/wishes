@@ -5,7 +5,7 @@ import { fail, type ActionFailure } from "@sveltejs/kit";
 import { requireAuthenticatedUser } from "$lib/server/auth";
 import { db } from "$lib/server/db";
 import * as schema from "$lib/server/db/schema";
-import { desc, eq } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 
 export const load: PageServerLoad = async ({ url }) => {
   const params = new URLSearchParams(url.search);
@@ -112,6 +112,7 @@ export const actions: Actions = {
     }
   },
   updateLabel: async (event): Promise<UpdateLabelActionReturn | void> => {
+    const user = requireAuthenticatedUser();
     const formData = await event.request.formData();
     const dataObject = formDataToObject(formData);
     const { data, error, success } = updateLabelSchema.safeParse(dataObject);
@@ -137,7 +138,9 @@ export const actions: Actions = {
           name: data.labelName,
           description: data.description,
         })
-        .where(eq(schema.labels.labelId, data.labelId));
+        .where(
+          and(eq(schema.labels.labelId, data.labelId), eq(schema.labels.creatorId, user.userId)),
+        );
     } catch (e) {
       if (e instanceof Error && "code" in e) {
         if (e.code === "SQLITE_CONSTRAINT_UNIQUE") {
@@ -154,6 +157,7 @@ export const actions: Actions = {
     }
   },
   deleteLabel: async (event): Promise<DeleteLabelActionReturn | void> => {
+    const user = requireAuthenticatedUser();
     const formData = await event.request.formData();
     const dataObject = formDataToObject(formData);
     const { data, error, success } = deleteLabelSchema.safeParse(dataObject);
@@ -173,7 +177,11 @@ export const actions: Actions = {
     }
 
     try {
-      await db.delete(schema.labels).where(eq(schema.labels.labelId, data.labelId));
+      await db
+        .delete(schema.labels)
+        .where(
+          and(eq(schema.labels.labelId, data.labelId), eq(schema.labels.creatorId, user.userId)),
+        );
     } catch (e) {
       console.error(e);
       return fail(500, {

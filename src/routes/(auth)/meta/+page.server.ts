@@ -5,7 +5,7 @@ import { fail, type ActionFailure } from "@sveltejs/kit";
 import { requireAuthenticatedUser } from "$lib/server/auth";
 import { db } from "$lib/server/db";
 import * as schema from "$lib/server/db/schema";
-import { desc } from "drizzle-orm";
+import { and, desc } from "drizzle-orm";
 import { eq } from "drizzle-orm";
 
 export const load: PageServerLoad = async ({ url }) => {
@@ -129,6 +129,7 @@ export const actions: Actions = {
     }
   },
   deleteMetadata: async (event): Promise<DeleteMetadataActionReturn | void> => {
+    const user = requireAuthenticatedUser();
     const formData = await event.request.formData();
     const dataObject = formDataToObject(formData);
     const { data, error, success } = deleteMetadataSchema.safeParse(dataObject);
@@ -148,7 +149,14 @@ export const actions: Actions = {
     }
 
     try {
-      await db.delete(schema.metadataFields).where(eq(schema.metadataFields.fieldId, data.fieldId));
+      await db
+        .delete(schema.metadataFields)
+        .where(
+          and(
+            eq(schema.metadataFields.fieldId, data.fieldId),
+            eq(schema.metadataFields.creatorId, user.userId),
+          ),
+        );
     } catch (e) {
       console.error(e);
       return fail(500, {
@@ -157,6 +165,7 @@ export const actions: Actions = {
     }
   },
   updateMetadata: async (event): Promise<UpdateMetadataActionReturn | void> => {
+    const user = requireAuthenticatedUser();
     const formData = await event.request.formData();
     const dataObject = formDataToObject(formData);
 
@@ -180,7 +189,12 @@ export const actions: Actions = {
       await db
         .update(schema.metadataFields)
         .set({ name: data.fieldName, description: data.description })
-        .where(eq(schema.metadataFields.fieldId, data.fieldId));
+        .where(
+          and(
+            eq(schema.metadataFields.fieldId, data.fieldId),
+            eq(schema.metadataFields.creatorId, user.userId),
+          ),
+        );
     } catch (e) {
       if (e instanceof Error && "code" in e) {
         if (e.code === "SQLITE_CONSTRAINT_UNIQUE") {

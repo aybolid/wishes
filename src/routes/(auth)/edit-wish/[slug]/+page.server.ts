@@ -10,10 +10,11 @@ import { and } from "drizzle-orm";
 import { inArray } from "drizzle-orm";
 
 export const load: PageServerLoad = async ({ params }) => {
+  const user = requireAuthenticatedUser();
   const wishId = parseInt(params.slug);
 
   const wish = await db.query.wishes.findFirst({
-    where: eq(schema.wishes.wishId, wishId),
+    where: and(eq(schema.wishes.wishId, wishId), eq(schema.wishes.creatorId, user.userId)),
     with: {
       wishesToLabels: {
         with: { label: true },
@@ -25,7 +26,7 @@ export const load: PageServerLoad = async ({ params }) => {
   });
 
   if (!wish) {
-    throw new Error("Wish not found");
+    return redirect(302, `/`);
   }
 
   const labels: schema.Label[] = await db.query.labels
