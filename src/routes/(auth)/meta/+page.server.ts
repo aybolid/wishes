@@ -50,6 +50,12 @@ const createMetadataSchema = z
     path: ["options"],
   });
 
+const updateMetadataSchema = z.object({
+  fieldId: z.string().transform((value) => parseInt(value, 10)),
+  fieldName: z.string().trim().min(1, "Required").max(31, "Must be 31 characters or less"),
+  description: z.string().trim().max(255, "Must be 255 characters or less").default(""),
+});
+
 const deleteMetadataSchema = z.object({
   fieldId: z.string().transform((value) => parseInt(value, 10)),
 });
@@ -61,6 +67,16 @@ type CreateMetadataActionReturn = ActionFailure<{
       description?: string;
       type?: string;
       options?: string;
+      root?: string;
+    };
+  };
+}>;
+
+type UpdateMetadataActionReturn = ActionFailure<{
+  updateMetadata: {
+    errorMap: {
+      fieldName?: string;
+      description?: string;
       root?: string;
     };
   };
@@ -137,6 +153,46 @@ export const actions: Actions = {
       console.error(e);
       return fail(500, {
         deleteMetadata: { errorMap: { root: "Something went wrong" } },
+      });
+    }
+  },
+  updateMetadata: async (event): Promise<UpdateMetadataActionReturn | void> => {
+    const formData = await event.request.formData();
+    const dataObject = formDataToObject(formData);
+
+    const { data, error, success } = updateMetadataSchema.safeParse(dataObject);
+
+    if (!success) {
+      const errorMap = error.issues.reduce<Record<PropertyKey, string>>((acc, issue) => {
+        acc[issue.path[0]] = issue.message;
+        return acc;
+      }, {});
+
+      if (errorMap.fieldId) {
+        errorMap.root = errorMap.fieldId;
+        delete errorMap.fieldId;
+      }
+
+      return fail(400, { updateMetadata: { errorMap } });
+    }
+
+    try {
+      await db
+        .update(schema.metadataFields)
+        .set({ name: data.fieldName, description: data.description })
+        .where(eq(schema.metadataFields.fieldId, data.fieldId));
+    } catch (e) {
+      if (e instanceof Error && "code" in e) {
+        if (e.code === "SQLITE_CONSTRAINT_UNIQUE") {
+          return fail(400, {
+            updateMetadata: { errorMap: { fieldName: "Field name already exists" } },
+          });
+        }
+      }
+
+      console.error(e);
+      return fail(500, {
+        updateMetadata: { errorMap: { root: "Something went wrong" } },
       });
     }
   },

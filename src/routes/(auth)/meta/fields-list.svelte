@@ -5,10 +5,13 @@
   import Popover from "$lib/components/ui/popover.svelte";
   import type { MetadataFieldWithCreator } from "$lib/server/db/schema";
   import { Edit, Trash } from "lucide-svelte";
-  import type { PageData } from "./$types";
+  import type { ActionData, PageData } from "./$types";
   import UserLink from "$lib/components/common/user-link.svelte";
+  import Drawer from "$lib/components/ui/drawer.svelte";
+  import UpdateMetaForm from "./update-meta-form.svelte";
 
   const { fields, user } = $derived(page.data as PageData);
+  const form = $derived<ActionData>(page.form);
 </script>
 
 {#if fields.length === 0}
@@ -40,9 +43,16 @@
     {/if}
     {#if isUserCreator}
       <div class="mt-4 flex items-center justify-end gap-2">
-        <Button title="Edit" size="icon" variant="secondary">
-          <Edit size={16} />
-        </Button>
+        <Drawer title="Edit metadata" description="Update metadata field details">
+          {#snippet trigger({ props })}
+            <Button title="Edit" size="icon" variant="secondary" {...props}>
+              <Edit size={16} />
+            </Button>
+          {/snippet}
+          {#snippet children({ setOpen })}
+            <UpdateMetaForm {field} onUpdate={() => setOpen(false)} />
+          {/snippet}
+        </Drawer>
         <Popover>
           {#snippet trigger({ props })}
             <Button {...props} type="button" title="Delete" size="icon" variant="destructive">

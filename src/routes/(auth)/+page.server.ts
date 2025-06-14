@@ -8,14 +8,14 @@ export const load: PageServerLoad = async ({ url }) => {
   const labelIdParam = params.get("label");
   const creatorIdParam = params.get("creator");
 
-  const wishes: schema.CompleteWish[] = await db.query.wishes
+  const wishes = await db.query.wishes
     .findMany({
       with: {
         creator: { columns: { passwordHash: false } },
         metadataValues: {
           with: { metadataField: true },
         },
-        labels: {
+        wishesToLabels: {
           with: { label: true },
         },
       },

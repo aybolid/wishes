@@ -98,6 +98,7 @@
 <section class="mt-4 grid gap-3">
   {#each data.wishes as wish}
     {@const isUserCreator = wish.creatorId === data.user.userId}
+    {@const labels = wish.wishesToLabels.map(({ label }) => label)}
     <div class="overflow-hidden rounded-sm border">
       <div class="flex items-center justify-between gap-2 px-3 py-3">
         <h3 class="font-semibold">
@@ -110,18 +111,18 @@
       {/if}
       <div class="mt-4 flex flex-col items-center justify-between gap-4 px-3 pb-3 sm:flex-row">
         <div class="flex w-full flex-grow flex-wrap items-center justify-start gap-2">
-          {#each wish.labels.slice(0, LABELS_TO_SHOW) as { label }}
+          {#each labels.slice(0, LABELS_TO_SHOW) as label}
             <LabelTag {label} />
           {/each}
-          {#if wish.labels.length > LABELS_TO_SHOW}
+          {#if labels.length > LABELS_TO_SHOW}
             <Popover>
               {#snippet trigger({ props })}
                 <span class="text-muted-foreground hover:text-primary cursor-pointer" {...props}>
-                  + {wish.labels.length - LABELS_TO_SHOW}
+                  + {labels.length - LABELS_TO_SHOW}
                 </span>
               {/snippet}
               <div class="flex w-min flex-wrap gap-2">
-                {#each wish.labels.slice(LABELS_TO_SHOW) as { label }}
+                {#each labels.slice(LABELS_TO_SHOW) as label}
                   <LabelTag {label} />
                 {/each}
               </div>

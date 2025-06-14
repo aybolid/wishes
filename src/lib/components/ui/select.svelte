@@ -32,7 +32,7 @@
   <Select.Trigger
     id={props.id || props.name}
     class={cn(
-      "focus:ring-primary bg-background data-placeholder:text-muted-foreground/80 inline-flex min-h-8.5 w-full items-center rounded-sm border px-3 py-1 select-none focus:ring",
+      "focus:ring-primary bg-background data-placeholder:text-muted-foreground/80 inline-flex min-h-8.5 w-full items-center rounded-sm border px-3 py-1 select-none focus:ring disabled:opacity-50",
       className,
     )}
     aria-label="Select an option"

@@ -8,8 +8,9 @@ export const users = sqliteTable("users", {
 });
 
 export const usersRelations = relations(users, ({ many }) => ({
-  labels: many(labels, { relationName: "labels" }),
-  metadataFields: many(metadataFields, { relationName: "metadataFields" }),
+  labels: many(labels),
+  metadataFields: many(metadataFields),
+  wishes: many(wishes),
 }));
 
 export type User = typeof users.$inferSelect;
@@ -36,11 +37,10 @@ export const labels = sqliteTable("labels", {
 
 export const labelsRelations = relations(labels, ({ one, many }) => ({
   creator: one(users, {
-    relationName: "creator",
     fields: [labels.creatorId],
     references: [users.userId],
   }),
-  wishes: many(wishes),
+  wishesToLabels: many(wishesToLabels),
 }));
 
 export type Label = typeof labels.$inferSelect;
@@ -58,12 +58,11 @@ export const wishes = sqliteTable("wishes", {
 
 export const wishesRelations = relations(wishes, ({ one, many }) => ({
   creator: one(users, {
-    relationName: "creator",
     fields: [wishes.creatorId],
     references: [users.userId],
   }),
   metadataValues: many(metadataValues),
-  labels: many(wishesToLabels),
+  wishesToLabels: many(wishesToLabels),
 }));
 
 export const wishesToLabels = sqliteTable("wishes_to_labels", {
@@ -78,12 +77,10 @@ export const wishesToLabels = sqliteTable("wishes_to_labels", {
 
 export const wishesToLabelsRelations = relations(wishesToLabels, ({ one }) => ({
   wish: one(wishes, {
-    relationName: "wish",
     fields: [wishesToLabels.wishId],
     references: [wishes.wishId],
   }),
   label: one(labels, {
-    relationName: "label",
     fields: [wishesToLabels.labelId],
     references: [labels.labelId],
   }),
@@ -109,7 +106,6 @@ export const metadataValues = sqliteTable("metadata_values", {
 
 export const metadataValuesRelations = relations(metadataValues, ({ one }) => ({
   metadataField: one(metadataFields, {
-    relationName: "metadataField",
     fields: [metadataValues.metadataFieldId],
     references: [metadataFields.fieldId],
   }),
@@ -132,12 +128,12 @@ export const metadataFields = sqliteTable("metadata_fields", {
   config: text({ mode: "json" }).notNull().$type<MetadataFieldConfig>(),
 });
 
-export const metadataFieldsRelations = relations(metadataFields, ({ one }) => ({
+export const metadataFieldsRelations = relations(metadataFields, ({ one, many }) => ({
   creator: one(users, {
-    relationName: "creator",
     fields: [metadataFields.creatorId],
     references: [users.userId],
   }),
+  metadataValues: many(metadataValues), // Added this relation
 }));
 
 export type MetadataFieldConfig =

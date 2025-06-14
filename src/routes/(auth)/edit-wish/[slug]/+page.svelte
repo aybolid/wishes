@@ -15,6 +15,8 @@
 
   const { data, form }: PageProps = $props();
 
+  const labels = $derived(data.wish.wishesToLabels.map(({ label }) => label));
+
   const errorMap = $derived(form?.updateWish?.errorMap);
 
   $effect(() => {
@@ -93,7 +95,7 @@
 
   <Label class="mt-4" for="labels">Labels</Label>
   <Select
-    value={data.wish.labels.map(({ labelId }) => labelId.toString())}
+    value={labels.map(({ labelId }) => labelId.toString())}
     id="labels"
     type="multiple"
     name="labels"

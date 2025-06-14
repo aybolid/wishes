@@ -15,7 +15,9 @@ export const load: PageServerLoad = async ({ params }) => {
   const wish = await db.query.wishes.findFirst({
     where: eq(schema.wishes.wishId, wishId),
     with: {
-      labels: true,
+      wishesToLabels: {
+        with: { label: true },
+      },
       metadataValues: {
         with: { metadataField: true },
       },
