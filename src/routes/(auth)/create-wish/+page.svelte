@@ -26,6 +26,10 @@
   let isCreating = $state(false);
 </script>
 
+<svelte:head>
+  <title>Wishes | Create wish</title>
+</svelte:head>
+
 <h1 class="flex items-center gap-2 text-lg font-semibold">
   Create Wish
   <Gift />

@@ -27,6 +27,10 @@
   });
 </script>
 
+<svelte:head>
+  <title>Wishes | Metadata</title>
+</svelte:head>
+
 <div class="flex w-full flex-col-reverse items-center justify-between sm:flex-row">
   <div class="flex w-full flex-col items-center gap-2 sm:flex-row">
     <div class="flex w-full items-center sm:w-fit">

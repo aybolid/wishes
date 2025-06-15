@@ -45,6 +45,10 @@
   let isUpdating = $state(false);
 </script>
 
+<svelte:head>
+  <title>Wishes | Edit wish</title>
+</svelte:head>
+
 <h1 class="flex items-center gap-2 text-lg font-semibold">
   Edit Wish
   <Gift />

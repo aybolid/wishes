@@ -14,6 +14,10 @@
   const isCurrentUser = $derived(user.userId === authenticatedUser?.userId);
 </script>
 
+<svelte:head>
+  <title>Wishes | {user.username}'s Profile</title>
+</svelte:head>
+
 <div class="flex items-center justify-between">
   <h1 class="flex items-center gap-2 text-xl font-semibold">
     <Avatar {user} />

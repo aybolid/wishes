@@ -13,6 +13,10 @@
   let isSubmitting = $state(false);
 </script>
 
+<svelte:head>
+  <title>Wishes | Login</title>
+</svelte:head>
+
 <main class="grid h-full place-items-center p-4">
   <form
     method="post"

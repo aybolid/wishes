@@ -1,6 +1,6 @@
 <script lang="ts">
   import Button from "$lib/components/ui/button.svelte";
-  import { Edit, Eye, Gift, SquareArrowOutUpRight, X } from "lucide-svelte";
+  import { Edit, Gift, SquareArrowOutUpRight, X } from "lucide-svelte";
   import type { PageProps } from "./$types";
   import UserLink from "$lib/components/common/user-link.svelte";
   import LabelTag from "$lib/components/common/label-tag.svelte";
@@ -23,6 +23,10 @@
     goto(`?${params.toString()}`, { replaceState: true });
   });
 </script>
+
+<svelte:head>
+  <title>Wishes</title>
+</svelte:head>
 
 <div class="flex w-full flex-col-reverse items-center justify-between sm:flex-row">
   <div class="flex w-full flex-col items-center gap-2 sm:flex-row">
