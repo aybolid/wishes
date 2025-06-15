@@ -1,0 +1,15 @@
+services:
+  app:
+    container_name: wishes-app
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+      ORIGIN: http://localhost:3000
+      DATABASE_URL: prod.db
+    volumes:
+      - ./data/prod.db:/prod.db
+    restart: unless-stopped
