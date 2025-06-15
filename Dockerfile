@@ -13,6 +13,7 @@ FROM node:22-alpine AS runner
 WORKDIR /app
 COPY --from=builder /app/build build/
 COPY --from=builder /app/node_modules node_modules/
+RUN mkdir /app/data
 COPY drizzle ./drizzle
 COPY package.json drizzle.config.ts ./
 EXPOSE 3000

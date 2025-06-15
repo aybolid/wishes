@@ -9,7 +9,7 @@ services:
     environment:
       NODE_ENV: production
       ORIGIN: http://localhost:3000
-      DATABASE_URL: prod.db
+      DATABASE_URL: data/prod.db
     volumes:
-      - ./data/prod.db:/app/prod.db
+      - ./data:/app/data
     restart: unless-stopped
