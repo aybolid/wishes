@@ -96,7 +96,7 @@
 {/if}
 
 <section class="mt-4 grid gap-3">
-  {#each data.wishes as wish}
+  {#each data.wishes as wish, i (`${i}_${wish.wishId}`)}
     {@const isUserCreator = wish.creatorId === data.user.userId}
     {@const labels = wish.wishesToLabels.map(({ label }) => label)}
     <div class="overflow-hidden rounded-sm border">
@@ -111,7 +111,7 @@
       {/if}
       <div class="mt-4 flex flex-col items-center justify-between gap-4 px-3 pb-3 sm:flex-row">
         <div class="flex w-full flex-grow flex-wrap items-center justify-start gap-2">
-          {#each labels.slice(0, LABELS_TO_SHOW) as label}
+          {#each labels.slice(0, LABELS_TO_SHOW) as label, i (`${i}_${label.labelId}`)}
             <LabelTag {label} />
           {/each}
           {#if labels.length > LABELS_TO_SHOW}
@@ -122,7 +122,7 @@
                 </span>
               {/snippet}
               <div class="flex w-min flex-wrap gap-2">
-                {#each labels.slice(LABELS_TO_SHOW) as label}
+                {#each labels.slice(LABELS_TO_SHOW) as label, i (`${i}_${label.labelId}`)}
                   <LabelTag {label} />
                 {/each}
               </div>
@@ -145,7 +145,7 @@
 
       {#if wish.metadataValues.length > 0}
         <div class="bg-muted/40 border-t p-3">
-          {#each wish.metadataValues as metadataValue}
+          {#each wish.metadataValues as metadataValue, i (`${i}_${metadataValue.metadataField.fieldId}`)}
             <p class="text-muted-foreground text-sm">
               {metadataValue.metadataField.name}:
               {#if metadataValue.metadataField.config.type === "boolean"}
